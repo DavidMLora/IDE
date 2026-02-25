@@ -2,16 +2,17 @@ import os
 from PySide6.QtWidgets import (QMainWindow, QSplitter, QTabWidget, QTextEdit, 
                              QStatusBar, QToolBar, QFileDialog, QWidget, 
                              QHBoxLayout, QVBoxLayout, QPushButton, QTabBar,
-                             QStackedWidget,QToolButton)
+                             QStackedWidget,QToolButton,QLabel)
 from PySide6.QtGui import QAction
 from PySide6.QtCore import Qt
 from editor import CodeEditor
 import qtawesome as qta
+from welcome import WelcomeScreen
 
 class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
-        self.setWindowTitle("Compilador UAA - IDE 2026")
+        self.setWindowTitle("IDE")
         self.resize(1200, 800)
 
         # Paneles de resultados y errores (Requerimientos 33, 54, 62) [cite: 33, 54, 62]
@@ -25,7 +26,7 @@ class MainWindow(QMainWindow):
         self.setStatusBar(self.status_bar)
 
         # Crear una pestaña vacía al inicio
-        self.nuevo_archivo()
+       # self.nuevo_archivo()
 
     def init_layout(self):
         import qtawesome as qta # Importación local por seguridad
@@ -40,7 +41,7 @@ class MainWindow(QMainWindow):
         self.header_widget = QWidget()
         self.header_widget.setStyleSheet("background-color: #2d2d2d; border-bottom: 1px solid #1e1e1e;")
         self.header_layout = QHBoxLayout(self.header_widget)
-        self.header_layout.setContentsMargins(0, 0, 5, 0)
+        self.header_layout.setContentsMargins(0, 0, 0   , 0)
         self.header_layout.setSpacing(2)
 
         # Barra de pestañas (Requerimiento: Gestión de archivos/Cerrar)
@@ -105,12 +106,28 @@ class MainWindow(QMainWindow):
         self.header_layout.addWidget(self.btn_intermedio)
         self.header_layout.addWidget(self.btn_run)
 
-        # --- 4. STACK DE EDITORES (Donde vive el texto de cada pestaña) ---
+        # --- 4. STACK DE VISTAS (PANTALLA INICIO vs EDITOR) ---
+        self.view_stack = QStackedWidget()
+        self.welcome_screen = WelcomeScreen(self)
+        
+        # Contenedor para cuando hay archivos abiertos
+        self.editor_workspace = QWidget()
+        workspace_layout = QVBoxLayout(self.editor_workspace)
+        workspace_layout.setContentsMargins(0, 0, 0, 0)
+        workspace_layout.setSpacing(0)
+        
         self.editor_stack = QStackedWidget()
         
-        # Añadir cabecera y stack al contenedor izquierdo
-        self.editor_layout.addWidget(self.header_widget)
-        self.editor_layout.addWidget(self.editor_stack)
+        # Añadimos la cabecera y el editor al workspace
+        workspace_layout.addWidget(self.header_widget)
+        workspace_layout.addWidget(self.editor_stack)
+        
+        # Añadimos ambas vistas al stack principal
+        self.view_stack.addWidget(self.welcome_screen)    # Índice 0 (Inicio)
+        self.view_stack.addWidget(self.editor_workspace)  # Índice 1 (Trabajo)
+        
+        # Añadir al contenedor izquierdo
+        self.editor_layout.addWidget(self.view_stack)
 
         # --- 5. ENSAMBLAJE FINAL CON SPLITTERS (Requerimiento 5: Paneles simultáneos) ---
         # Splitter Horizontal: [ Editor | Paneles Análisis ]
@@ -168,6 +185,7 @@ class MainWindow(QMainWindow):
         self.file_tabs_bar.setTabButton(idx, QTabBar.RightSide, btn_cerrar)
         
         self.file_tabs_bar.setCurrentIndex(idx)
+        self.view_stack.setCurrentIndex(1)
 
     def abrir_archivo(self):
         path, _ = QFileDialog.getOpenFileName(self, "Abrir", "", "Archivos de texto (*.txt);;Todos (*)")
@@ -179,7 +197,7 @@ class MainWindow(QMainWindow):
             idx = self.editor_stack.addWidget(nuevo_ed)
             self.file_tabs_bar.addTab(os.path.basename(path))
             self.file_tabs_bar.setCurrentIndex(idx)
-
+            self.view_stack.setCurrentIndex(1)
     def guardar_archivo(self):
         ed = self.editor_actual()
         if ed:
@@ -190,14 +208,16 @@ class MainWindow(QMainWindow):
                 self.file_tabs_bar.setTabText(self.file_tabs_bar.currentIndex(), os.path.basename(path))
 
     def cerrar_pestana(self, index):
-        if self.file_tabs_bar.count() > 1:
-            widget = self.editor_stack.widget(index)
-            self.editor_stack.removeWidget(widget)
-            self.file_tabs_bar.removeTab(index)
-        else:
-            self.editor_actual().clear()
-            self.file_tabs_bar.setTabText(0, "Sin título")
-
+        # Reemplazamos todo el método con esta nueva lógica
+        widget = self.editor_stack.widget(index)
+        self.editor_stack.removeWidget(widget)
+        self.file_tabs_bar.removeTab(index)
+        widget.deleteLater() # Liberar memoria del widget cerrado
+        
+        # Si ya no quedan pestañas, volvemos a la pantalla de inicio
+        if self.file_tabs_bar.count() == 0:
+            self.view_stack.setCurrentIndex(0)
+            self.status_bar.clearMessage()
     def cambiar_archivo_activo(self, index):
         self.editor_stack.setCurrentIndex(index)
         self.actualizar_status()
