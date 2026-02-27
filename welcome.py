@@ -1,51 +1,49 @@
+# welcome.py
 from PySide6.QtWidgets import QWidget, QVBoxLayout, QLabel, QPushButton
 from PySide6.QtCore import Qt
 import qtawesome as qta
+from styles import WELCOME_STYLES
 
 class WelcomeScreen(QWidget):
     def __init__(self, main_window):
         super().__init__()
         self.main_window = main_window
-        layout = QVBoxLayout(self)
-        layout.setContentsMargins(60, 60, 60, 60)
+        self.setStyleSheet(WELCOME_STYLES)
         
-        # Título principal
+        layout = QVBoxLayout(self)
+        layout.setContentsMargins(80, 80, 80, 80)
+        layout.setAlignment(Qt.AlignCenter)
+        
+        # Títulos
         title = QLabel("Compilador UAA - IDE 2026")
-        title.setStyleSheet("font-size: 36px; color: #cccccc; font-weight: normal;")
+        title.setObjectName("title")
+        title.setAlignment(Qt.AlignCenter)
         layout.addWidget(title)
         
         subtitle = QLabel("Editing evolved")
-        subtitle.setStyleSheet("font-size: 18px; color: #888888; margin-bottom: 30px;")
+        subtitle.setObjectName("subtitle")
+        subtitle.setAlignment(Qt.AlignCenter)
         layout.addWidget(subtitle)
         
-        # Sección Start
-        start_label = QLabel("Start")
-        start_label.setStyleSheet("font-size: 20px; color: #cccccc; margin-top: 20px; margin-bottom: 10px;")
-        layout.addWidget(start_label)
+        # Botones de Acción
+        self.btn_new = QPushButton("   Nuevo Archivo...")
+        self.btn_new.setIcon(qta.icon('fa5s.file-medical', color='#4ebfff'))
+        self.btn_new.setObjectName("link_btn")
+        self.btn_new.setCursor(Qt.PointingHandCursor)
+        self.btn_new.clicked.connect(self.main_window.nuevo_archivo) 
         
-        # Estilo para los botones tipo link
-        btn_style = """
-            QPushButton { text-align: left; background: transparent; color: #007acc; font-size: 14px; border: none; padding: 5px 0px; }
-            QPushButton:hover { color: #0098ff; text-decoration: underline; }
-        """
+        self.btn_open = QPushButton("   Abrir Archivo...")
+        self.btn_open.setIcon(qta.icon('fa5s.folder-open', color='#4ebfff'))
+        self.btn_open.setObjectName("link_btn")
+        self.btn_open.setCursor(Qt.PointingHandCursor)
+        self.btn_open.clicked.connect(self.main_window.abrir_archivo)
         
-        # Botón Nuevo Archivo
-        btn_new = QPushButton("  Nuevo Archivo...")
-        btn_new.setIcon(qta.icon('fa5s.file-medical', color='#007acc'))
-        btn_new.setStyleSheet(btn_style)
-        btn_new.setCursor(Qt.PointingHandCursor)
-        # Conectamos con la función de la ventana principal
-        btn_new.clicked.connect(self.main_window.nuevo_archivo) 
-        layout.addWidget(btn_new)
+        # Contenedor para centrar botones
+        btn_layout = QVBoxLayout()
+        btn_layout.setAlignment(Qt.AlignCenter)
+        btn_layout.setSpacing(10)
+        btn_layout.addWidget(self.btn_new)
+        btn_layout.addWidget(self.btn_open)
         
-        # Botón Abrir Archivo
-        btn_open = QPushButton("  Abrir Archivo...")
-        btn_open.setIcon(qta.icon('fa5s.folder-open', color='#007acc'))
-        btn_open.setStyleSheet(btn_style)
-        btn_open.setCursor(Qt.PointingHandCursor)
-        # Conectamos con la función de la ventana principal
-        btn_open.clicked.connect(self.main_window.abrir_archivo)
-        layout.addWidget(btn_open)
-        
-        layout.addStretch() # Empuja todo hacia arriba
-        self.setStyleSheet("background-color: #1e1e1e;") # Fondo oscuro
+        layout.addLayout(btn_layout)
+        layout.addStretch()
