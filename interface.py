@@ -19,7 +19,6 @@ class MainWindow(QMainWindow):
         self.resize(1200, 800)
         self.setStyleSheet(GLOBAL_STYLES)
 
-        # Contenedores principales
         self.tabs_analisis = QTabWidget()
         self.consola_inferior = QTabWidget()
 
@@ -29,7 +28,6 @@ class MainWindow(QMainWindow):
         self.status_bar = QStatusBar()
         self.setStatusBar(self.status_bar)
 
-        # Actualizar la interfaz al estado inicial (sin archivos)
         self.actualizar_estado_ui()
 
     def _setup_ui(self):
@@ -46,21 +44,18 @@ class MainWindow(QMainWindow):
         self.header_layout.setContentsMargins(10, 5, 10, 5)
         self.header_layout.setSpacing(10)
 
-        # Barra de pestañas de archivos
         self.file_tabs_bar = QTabBar()
         self.file_tabs_bar.setTabsClosable(True)
         self.file_tabs_bar.setMovable(True)
         self.file_tabs_bar.tabCloseRequested.connect(self.cerrar_pestana)
         self.file_tabs_bar.currentChanged.connect(self.cambiar_archivo_activo)
 
-        # Botones de herramientas
         self.btn_lexico = self._create_tool_button('fa5s.search', "Análisis Léxico")
         self.btn_sintactico = self._create_tool_button('fa5s.code-branch', "Análisis Sintáctico")
         self.btn_semantico = self._create_tool_button('fa5s.check-circle', "Análisis Semántico")
         self.btn_intermedio = self._create_tool_button('fa5s.file-code', "Generar Código Intermedio")
         self.btn_run = self._create_tool_button('fa5s.play', "Ejecutar Programa", color='#4ec9b0')
 
-        # Conectar botones a las simulaciones
         self.btn_lexico.clicked.connect(self.ejecutar_lexico)
         self.btn_sintactico.clicked.connect(self.ejecutar_sintactico)
         self.btn_semantico.clicked.connect(self.ejecutar_semantico)
@@ -76,16 +71,13 @@ class MainWindow(QMainWindow):
         self.header_layout.addWidget(self.btn_run)
 
     def _create_tool_button(self, icon_name, tooltip, color='#cccccc'):
-        """Método auxiliar para crear botones uniformes"""
         btn = QPushButton()
-        # Añadimos 'disabled_color' para que el icono se vuelva gris oscuro automáticamente
         btn.setIcon(qta.icon(icon_name, color=color, disabled_color='#444444'))
         btn.setToolTip(tooltip)
         btn.setFixedSize(36, 36)
         return btn
 
     def _setup_workspace(self):
-        """Configura el área del editor y la pantalla de inicio"""
         self.view_stack = QStackedWidget()
         self.welcome_screen = WelcomeScreen(self)
         
@@ -102,67 +94,66 @@ class MainWindow(QMainWindow):
         self.view_stack.addWidget(self.editor_workspace)
 
     def _setup_panels(self):
-        """Configura los paneles laterales e inferiores"""
         paneles_analisis = ["Léxico", "Sintáctico", "Semántico", "Tabla Símbolos", "C. Intermedio"]
         for nombre in paneles_analisis:
             txt_edit = QTextEdit()
             txt_edit.setReadOnly(True)
             self.tabs_analisis.addTab(txt_edit, nombre)
 
-        # Consolas inferiores
         for nombre in ["Errores Léxicos", "Errores Sintácticos", "Errores Semánticos", "Resultados"]:
             txt_edit = QTextEdit()
             txt_edit.setReadOnly(True)
             self.consola_inferior.addTab(txt_edit, nombre)
 
     def _assemble_layout(self):
-        """Ensambla todos los componentes usando QSplitters"""
         self.editor_container = QWidget()
         editor_layout = QVBoxLayout(self.editor_container)
         editor_layout.setContentsMargins(10, 10, 5, 5)
         editor_layout.addWidget(self.view_stack)
 
-        h_splitter = QSplitter(Qt.Horizontal)
-        h_splitter.addWidget(self.editor_container)
         
-        panel_derecho = QWidget()
-        panel_derecho_layout = QVBoxLayout(panel_derecho)
+        self.h_splitter = QSplitter(Qt.Horizontal)
+        self.h_splitter.addWidget(self.editor_container)
+        
+        self.panel_derecho = QWidget()
+        panel_derecho_layout = QVBoxLayout(self.panel_derecho)
         panel_derecho_layout.setContentsMargins(5, 10, 10, 5)
         panel_derecho_layout.addWidget(self.tabs_analisis)
-        h_splitter.addWidget(panel_derecho)
+        self.h_splitter.addWidget(self.panel_derecho)
 
-        v_splitter = QSplitter(Qt.Vertical)
-        v_splitter.addWidget(h_splitter)
+        self.v_splitter = QSplitter(Qt.Vertical)
+        self.v_splitter.addWidget(self.h_splitter)
         
-        panel_inferior = QWidget()
-        panel_inferior_layout = QVBoxLayout(panel_inferior)
+        self.panel_inferior = QWidget()
+        panel_inferior_layout = QVBoxLayout(self.panel_inferior)
         panel_inferior_layout.setContentsMargins(10, 5, 10, 10)
         panel_inferior_layout.addWidget(self.consola_inferior)
-        v_splitter.addWidget(panel_inferior)
+        self.v_splitter.addWidget(self.panel_inferior)
 
-        v_splitter.setStretchFactor(0, 3)
-        v_splitter.setStretchFactor(1, 1)
-        self.setCentralWidget(v_splitter)
+        self.v_splitter.setStretchFactor(0, 3)
+        self.v_splitter.setStretchFactor(1, 1)
+        self.setCentralWidget(self.v_splitter)
 
-    # --- CONTROL DE ESTADO DE LA UI ---
+    # ||||------------------------------ CONTROL DE ESTADO DE LA UI -----------------------------------||||
     def actualizar_estado_ui(self):
-        """Activa o desactiva botones y menús dependiendo de si hay un archivo abierto."""
         hay_archivo = self.editor_actual() is not None
 
-        # Botones de herramientas superiores
+        
+        self.panel_derecho.setVisible(hay_archivo)
+        self.panel_inferior.setVisible(hay_archivo)
+
+       
         self.btn_lexico.setEnabled(hay_archivo)
         self.btn_sintactico.setEnabled(hay_archivo)
         self.btn_semantico.setEnabled(hay_archivo)
         self.btn_intermedio.setEnabled(hay_archivo)
         self.btn_run.setEnabled(hay_archivo)
 
-        # Opciones del menú Archivo (si ya fueron creadas)
         if hasattr(self, 'action_cerrar'):
             self.action_cerrar.setEnabled(hay_archivo)
             self.action_guardar.setEnabled(hay_archivo)
             self.action_guardar_como.setEnabled(hay_archivo)
 
-        # Opciones del menú Compilar (si ya fueron creadas)
         if hasattr(self, 'action_lexico'):
             self.action_lexico.setEnabled(hay_archivo)
             self.action_sintactico.setEnabled(hay_archivo)
@@ -170,13 +161,26 @@ class MainWindow(QMainWindow):
             self.action_intermedio.setEnabled(hay_archivo)
             self.action_run.setEnabled(hay_archivo)
 
-    # --- LÓGICA DE ARCHIVOS ---
+   
+    def restaurar_panel_derecho(self):
+        sizes = self.h_splitter.sizes()
+        if sizes[1] == 0: 
+            total = sum(sizes) or self.width()
+            self.h_splitter.setSizes([int(total * 0.7), int(total * 0.3)]) 
+
+    def restaurar_panel_inferior(self):
+        sizes = self.v_splitter.sizes()
+        if sizes[1] == 0:  
+            total = sum(sizes) or self.height()
+            self.v_splitter.setSizes([int(total * 0.75), int(total * 0.25)]) 
+
+    # ||||------------------------------- LÓGICA DE ARCHIVOS -------------------------------------||||
     def editor_actual(self):
         return self.editor_stack.currentWidget()
 
     def nuevo_archivo(self):
         nuevo_ed = CodeEditor()
-        nuevo_ed.file_path = None # Atributo para saber si el archivo ya fue guardado en disco
+        nuevo_ed.file_path = None
         nuevo_ed.cursorPositionChanged.connect(self.actualizar_status)
         idx = self.editor_stack.addWidget(nuevo_ed)
         
@@ -195,7 +199,7 @@ class MainWindow(QMainWindow):
         self.file_tabs_bar.setTabButton(idx, QTabBar.RightSide, btn_cerrar)
         self.file_tabs_bar.setCurrentIndex(idx)
         self.view_stack.setCurrentIndex(1)
-        self.actualizar_estado_ui() # Actualizamos la UI
+        self.actualizar_estado_ui()
 
     def abrir_archivo(self):
         path, _ = QFileDialog.getOpenFileName(self, "Abrir", "", "Archivos de texto (*.txt);;Todos (*)")
@@ -204,7 +208,7 @@ class MainWindow(QMainWindow):
             with open(path, 'r', encoding='utf-8') as f:
                 nuevo_ed.setPlainText(f.read())
             
-            nuevo_ed.file_path = path # Guardamos la ruta del archivo abierto
+            nuevo_ed.file_path = path
             nuevo_ed.cursorPositionChanged.connect(self.actualizar_status)
             idx = self.editor_stack.addWidget(nuevo_ed)
             self.file_tabs_bar.addTab(os.path.basename(path))
@@ -222,18 +226,16 @@ class MainWindow(QMainWindow):
 
             self.file_tabs_bar.setCurrentIndex(idx)
             self.view_stack.setCurrentIndex(1)
-            self.actualizar_estado_ui() # Actualizamos la UI
+            self.actualizar_estado_ui()
 
     def guardar_archivo(self):
         ed = self.editor_actual()
         if ed:
-            # Si el archivo ya tiene una ruta (fue abierto o guardado antes), sobreescribir
             if hasattr(ed, 'file_path') and ed.file_path:
                 with open(ed.file_path, 'w', encoding='utf-8') as f:
                     f.write(ed.toPlainText())
                 self.status_bar.showMessage(f"Archivo guardado: {os.path.basename(ed.file_path)}", 3000)
             else:
-                # Si no tiene ruta (es "Sin título"), se comporta como Guardar Como
                 self.guardar_como()
 
     def guardar_como(self):
@@ -244,7 +246,7 @@ class MainWindow(QMainWindow):
                 with open(path, 'w', encoding='utf-8') as f:
                     f.write(ed.toPlainText())
                 
-                ed.file_path = path # Actualizamos la ruta en el editor
+                ed.file_path = path
                 self.file_tabs_bar.setTabText(self.file_tabs_bar.currentIndex(), os.path.basename(path))
                 self.status_bar.showMessage(f"Archivo guardado como: {os.path.basename(path)}", 3000)
 
@@ -263,7 +265,7 @@ class MainWindow(QMainWindow):
             self.view_stack.setCurrentIndex(0)
             self.status_bar.clearMessage()
         
-        self.actualizar_estado_ui() # Actualizamos la UI al cerrar
+        self.actualizar_estado_ui()
 
     def cambiar_archivo_activo(self, index):
         self.editor_stack.setCurrentIndex(index)
@@ -276,7 +278,7 @@ class MainWindow(QMainWindow):
             cursor = ed.textCursor()
             self.status_bar.showMessage(f"Línea: {cursor.blockNumber()+1} | Columna: {cursor.columnNumber()}")
 
-    # --- SIMULACIÓN DE COMPILACIÓN ---
+    # ||||---------------------------- SIMULACIÓN DE COMPILACIÓN -------------------------------||||
     def obtener_codigo(self):
         ed = self.editor_actual()
         if not ed:
@@ -286,6 +288,8 @@ class MainWindow(QMainWindow):
     def ejecutar_lexico(self):
         codigo = self.obtener_codigo()
         if codigo is None: return
+
+        self.restaurar_panel_derecho() 
 
         self.status_bar.showMessage("Ejecutando Análisis Léxico...", 3000)
         simulacion = ">> INICIANDO ANÁLISIS LÉXICO...\n"
@@ -301,6 +305,8 @@ class MainWindow(QMainWindow):
 
     def ejecutar_sintactico(self):
         if self.obtener_codigo() is None: return
+        self.restaurar_panel_derecho() 
+        
         self.status_bar.showMessage("Ejecutando Análisis Sintáctico...", 3000)
         simulacion = ">> INICIANDO ANÁLISIS SINTÁCTICO...\n\n PROGRAMA\n └── FUNCION_PRINCIPAL\n     ├── TIPO: int\n     ├── ID: main\n     └── BLOQUE\n         └── RETORNO: 0\n\n>> Análisis sintáctico finalizado."
         self.tabs_analisis.widget(1).setPlainText(simulacion)
@@ -308,6 +314,8 @@ class MainWindow(QMainWindow):
 
     def ejecutar_semantico(self):
         if self.obtener_codigo() is None: return
+        self.restaurar_panel_derecho() 
+        
         self.status_bar.showMessage("Ejecutando Análisis Semántico...", 3000)
         simulacion = ">> INICIANDO ANÁLISIS SEMÁNTICO...\n\n[OK] Verificación de tipos exitosa.\n[OK] Ámbitos de variables validados.\n\n>> Análisis semántico finalizado."
         self.tabs_analisis.widget(2).setPlainText(simulacion)
@@ -315,6 +323,8 @@ class MainWindow(QMainWindow):
 
     def ejecutar_codigo_intermedio(self):
         if self.obtener_codigo() is None: return
+        self.restaurar_panel_derecho() 
+        
         self.status_bar.showMessage("Generando Código Intermedio...", 3000)
         simulacion = ">> GENERANDO CÓDIGO INTERMEDIO (Tres Direcciones)...\n\nt1 = 5\nt2 = 10\nt3 = t1 + t2\na = t3\ngoto L1\n"
         self.tabs_analisis.widget(4).setPlainText(simulacion)
@@ -322,16 +332,17 @@ class MainWindow(QMainWindow):
 
     def ejecutar_programa(self):
         if self.obtener_codigo() is None: return
+        self.restaurar_panel_inferior() 
+        
         self.status_bar.showMessage("Ejecutando Programa...", 3000)
         simulacion = ">> EJECUCIÓN INICIADA...\n\nHola Mundo!\n\n>> Proceso terminado con código de salida 0."
         self.consola_inferior.widget(3).setPlainText(simulacion)
         self.consola_inferior.setCurrentIndex(3)
 
-    # --- MENÚS ---
+    # ||||------------------------------- MENÚS -----------------------------------------|||||
     def crear_menus_y_herramientas(self):
         menu = self.menuBar()
         
-        # MENÚ ARCHIVO
         archivo_menu = menu.addMenu("&Archivo")
         
         self.action_nuevo = QAction("Nuevo", self)
@@ -360,7 +371,6 @@ class MainWindow(QMainWindow):
         archivo_menu.addSeparator()
         archivo_menu.addAction(self.action_salir)
 
-        # MENÚ COMPILAR
         compilar_menu = menu.addMenu("&Compilar")
         
         self.action_lexico = QAction("Análisis Léxico", self)
@@ -383,4 +393,5 @@ class MainWindow(QMainWindow):
         compilar_menu.addAction(self.action_semantico)
         compilar_menu.addAction(self.action_intermedio)
         compilar_menu.addSeparator()
+
         compilar_menu.addAction(self.action_run)

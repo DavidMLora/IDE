@@ -22,7 +22,10 @@ class CodeEditor(QPlainTextEdit):
         self.updateRequest.connect(self.update_line_number_area)
         self.cursorPositionChanged.connect(self.highlight_current_line)
         self.update_line_number_area_width(0)
-        self.highlight_current_line() # Asegurar resaltado inicial
+        self.highlight_current_line() # Asegura resaltado inicial
+        
+        
+        self.setLineWrapMode(QPlainTextEdit.NoWrap)
 
     def line_number_area_width(self):
         digits = len(str(max(1, self.blockCount())))
@@ -48,7 +51,6 @@ class CodeEditor(QPlainTextEdit):
         extra_selections = []
         if not self.isReadOnly():
             selection = QTextEdit.ExtraSelection()
-            # Color cohesivo para la línea actual (Acorde al tema oscuro)
             line_color = QColor("#2a2d2e") 
             selection.format.setBackground(line_color)
             selection.format.setProperty(QTextFormat.FullWidthSelection, True)
@@ -59,7 +61,6 @@ class CodeEditor(QPlainTextEdit):
 
     def lineNumberAreaPaintEvent(self, event):
         painter = QPainter(self.line_number_area)
-        # Fondo del área de números
         painter.fillRect(event.rect(), QColor("#1e1e1e"))
         
         block = self.firstVisibleBlock()
@@ -70,7 +71,6 @@ class CodeEditor(QPlainTextEdit):
         while block.isValid() and top <= event.rect().bottom():
             if block.isVisible() and bottom >= event.rect().top():
                 number = str(block_number + 1)
-                # Color del texto de los números de línea
                 painter.setPen(QColor("#858585"))
                 painter.drawText(0, top, self.line_number_area.width() - 5, self.fontMetrics().height(), Qt.AlignRight | Qt.AlignVCenter, number)
             block = block.next()
