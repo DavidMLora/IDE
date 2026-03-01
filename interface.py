@@ -135,14 +135,17 @@ class MainWindow(QMainWindow):
         self.setCentralWidget(self.v_splitter)
 
     # ||||------------------------------ CONTROL DE ESTADO DE LA UI -----------------------------------||||
+    # ||||------------------------------ CONTROL DE ESTADO DE LA UI -----------------------------------||||
     def actualizar_estado_ui(self):
         hay_archivo = self.editor_actual() is not None
 
-        
-        self.panel_derecho.setVisible(hay_archivo)
-        self.panel_inferior.setVisible(hay_archivo)
+        # Ya no forzamos la visibilidad a True al abrir un archivo.
+        # Solo los ocultamos si no queda ningún archivo abierto.
+        if not hay_archivo:
+            self.panel_derecho.setVisible(False)
+            self.panel_inferior.setVisible(False)
 
-       
+        # Habilitar botones de acción según el estado
         self.btn_lexico.setEnabled(hay_archivo)
         self.btn_sintactico.setEnabled(hay_archivo)
         self.btn_semantico.setEnabled(hay_archivo)
@@ -163,16 +166,18 @@ class MainWindow(QMainWindow):
 
    
     def restaurar_panel_derecho(self):
+        self.panel_derecho.setVisible(True) # Forzamos a que aparezca por primera vez
         sizes = self.h_splitter.sizes()
         if sizes[1] == 0: 
             total = sum(sizes) or self.width()
             self.h_splitter.setSizes([int(total * 0.7), int(total * 0.3)]) 
 
     def restaurar_panel_inferior(self):
+        self.panel_inferior.setVisible(True) # Forzamos a que aparezca por primera vez
         sizes = self.v_splitter.sizes()
         if sizes[1] == 0:  
             total = sum(sizes) or self.height()
-            self.v_splitter.setSizes([int(total * 0.75), int(total * 0.25)]) 
+            self.v_splitter.setSizes([int(total * 0.75), int(total * 0.25)])
 
     # ||||------------------------------- LÓGICA DE ARCHIVOS -------------------------------------||||
     def editor_actual(self):
@@ -182,6 +187,7 @@ class MainWindow(QMainWindow):
         nuevo_ed = CodeEditor()
         nuevo_ed.file_path = None
         nuevo_ed.cursorPositionChanged.connect(self.actualizar_status)
+        nuevo_ed.textChanged.connect(self.actualizar_status) # <-- NUEVO
         idx = self.editor_stack.addWidget(nuevo_ed)
         
         self.file_tabs_bar.addTab("Sin título")
@@ -210,6 +216,7 @@ class MainWindow(QMainWindow):
             
             nuevo_ed.file_path = path
             nuevo_ed.cursorPositionChanged.connect(self.actualizar_status)
+            nuevo_ed.textChanged.connect(self.actualizar_status) # <-- NUEVO
             idx = self.editor_stack.addWidget(nuevo_ed)
             self.file_tabs_bar.addTab(os.path.basename(path))
             
@@ -276,7 +283,8 @@ class MainWindow(QMainWindow):
         ed = self.editor_actual()
         if ed:
             cursor = ed.textCursor()
-            self.status_bar.showMessage(f"Línea: {cursor.blockNumber()+1} | Columna: {cursor.columnNumber()}")
+            caracteres = len(ed.toPlainText()) # <-- NUEVO
+            self.status_bar.showMessage(f"Línea: {cursor.blockNumber()+1} | Columna: {cursor.columnNumber()} | Caracteres: {caracteres}")
 
     # ||||---------------------------- SIMULACIÓN DE COMPILACIÓN -------------------------------||||
     def obtener_codigo(self):
@@ -346,21 +354,27 @@ class MainWindow(QMainWindow):
         archivo_menu = menu.addMenu("&Archivo")
         
         self.action_nuevo = QAction("Nuevo", self)
+        self.action_nuevo.setShortcut("Ctrl+N") # <-- Atajo
         self.action_nuevo.triggered.connect(self.nuevo_archivo)
         
         self.action_abrir = QAction("Abrir", self)
+        self.action_abrir.setShortcut("Ctrl+O") # <-- Atajo
         self.action_abrir.triggered.connect(self.abrir_archivo)
         
-        self.action_cerrar = QAction("Cerrar", self)
+        self.action_cerrar = QAction("Cerrar Editor", self)
+        self.action_cerrar.setShortcut("Ctrl+F4") # <-- Atajo (como en tu imagen)
         self.action_cerrar.triggered.connect(self.cerrar_archivo_actual)
         
         self.action_guardar = QAction("Guardar", self)
+        self.action_guardar.setShortcut("Ctrl+S") # <-- Atajo
         self.action_guardar.triggered.connect(self.guardar_archivo)
         
-        self.action_guardar_como = QAction("Guardar como", self)
+        self.action_guardar_como = QAction("Guardar como...", self)
+        self.action_guardar_como.setShortcut("Ctrl+Shift+S") # <-- Atajo
         self.action_guardar_como.triggered.connect(self.guardar_como)
         
         self.action_salir = QAction("Salir", self)
+        self.action_salir.setShortcut("Alt+F4") # <-- Atajo
         self.action_salir.triggered.connect(self.close)
 
         archivo_menu.addAction(self.action_nuevo)
@@ -374,18 +388,23 @@ class MainWindow(QMainWindow):
         compilar_menu = menu.addMenu("&Compilar")
         
         self.action_lexico = QAction("Análisis Léxico", self)
+        self.action_lexico.setShortcut("F6")
         self.action_lexico.triggered.connect(self.ejecutar_lexico)
         
         self.action_sintactico = QAction("Análisis Sintáctico", self)
+        self.action_sintactico.setShortcut("F7")
         self.action_sintactico.triggered.connect(self.ejecutar_sintactico)
         
         self.action_semantico = QAction("Análisis Semántico", self)
+        self.action_semantico.setShortcut("F8")
         self.action_semantico.triggered.connect(self.ejecutar_semantico)
         
         self.action_intermedio = QAction("Generación de Código Intermedio", self)
+        self.action_intermedio.setShortcut("F9")
         self.action_intermedio.triggered.connect(self.ejecutar_codigo_intermedio)
         
         self.action_run = QAction("Ejecución", self)
+        self.action_run.setShortcut("F5")
         self.action_run.triggered.connect(self.ejecutar_programa)
 
         compilar_menu.addAction(self.action_lexico)

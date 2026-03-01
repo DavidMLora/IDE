@@ -79,8 +79,45 @@ GLOBAL_STYLES = """
         background-color: #007acc;
         color: white;
     }
+
+    /* ======== ESTILOS DE MENÚ ======== */
+    QMenuBar {
+        background-color: #1e1e1e;
+        color: #cccccc;
+        border-bottom: 1px solid #333333;
+    }
+    QMenuBar::item {
+        padding: 6px 12px;
+        background-color: transparent;
+        border-radius: 4px;
+    }
+    QMenuBar::item:selected {
+        background-color: #333333;
+    }
+
+    QMenu {
+        background-color: #252526;
+        color: #cccccc;
+        border: 1px solid #333333;
+        border-radius: 6px;
+        padding: 4px 0px;
+    }
+    QMenu::item {
+        padding: 6px 30px 6px 20px;
+        background-color: transparent;
+        min-width: 220px; /* <-- Esto le da suficiente espacio para el atajo largo */
+    }
+    QMenu::item:selected {
+        background-color: #007acc;
+        color: white;
+    }
+    QMenu::separator {
+        height: 1px;
+        background: #333333;
+        margin: 4px 0px;
+    }
     
-    /* ======== NUEVO: ESTADO DESHABILITADO ======== */
+    /* ======== ESTADO DESHABILITADO ======== */
     QPushButton:disabled, QToolButton:disabled {
         color: #555555;
         background-color: transparent;
@@ -88,6 +125,7 @@ GLOBAL_STYLES = """
     }
     QMenu::item:disabled {
         color: #555555;
+        background-color: transparent;
     }
 """
 
