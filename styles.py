@@ -8,7 +8,7 @@ GLOBAL_STYLES = """
         font-family: 'Segoe UI', Arial, sans-serif;
     }
 
-    /* Editor de texto y consolas */
+    /* Editor de texto (Global) */
     QTextEdit, QPlainTextEdit {
         background-color: #252526;
         color: #d4d4d4;
@@ -23,11 +23,18 @@ GLOBAL_STYLES = """
         border: 1px solid #333333;
         border-radius: 6px;
         background-color: #252526;
+        margin-top: -1px;
     }
+    
+    QTabWidget QTextEdit, QTabWidget QPlainTextEdit {
+        border: none;
+        border-radius: 0px; 
+    }
+
     QTabBar::tab {
         background: #2d2d2d;
         color: #888888;
-        padding: 8px 20px;
+        padding: 8px 16px;
         border-top-left-radius: 6px;
         border-top-right-radius: 6px;
         border: 1px solid transparent;
@@ -40,6 +47,20 @@ GLOBAL_STYLES = """
     }
     QTabBar::tab:hover:!selected {
         background: #333333;
+    }
+
+    QTabBar::scroller {
+        width: 40px; 
+    }
+    QTabBar QToolButton {
+        background-color: #2d2d2d;
+        color: #cccccc;
+        border: none;
+        border-radius: 4px;
+        margin: 2px;
+    }
+    QTabBar QToolButton:hover {
+        background-color: #444444;
     }
 
     /* Botones de herramientas y acciones */
@@ -58,18 +79,15 @@ GLOBAL_STYLES = """
         background-color: #007acc;
         color: white;
     }
-
-    /* Divisores (Splitters) */
-    QSplitter::handle {
-        background-color: #333333;
-        margin: 2px;
-        border-radius: 2px;
+    
+    /* ======== NUEVO: ESTADO DESHABILITADO ======== */
+    QPushButton:disabled, QToolButton:disabled {
+        color: #555555;
+        background-color: transparent;
+        border: 1px solid transparent;
     }
-    QSplitter::handle:horizontal {
-        width: 4px;
-    }
-    QSplitter::handle:vertical {
-        height: 4px;
+    QMenu::item:disabled {
+        color: #555555;
     }
 """
 
