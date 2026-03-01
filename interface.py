@@ -15,7 +15,7 @@ from styles import GLOBAL_STYLES
 class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
-        self.setWindowTitle("IDE Compilador")
+        self.setWindowTitle("CompilladorIDE")
         self.resize(1200, 800)
         self.setStyleSheet(GLOBAL_STYLES)
 
@@ -31,14 +31,14 @@ class MainWindow(QMainWindow):
         self.actualizar_estado_ui()
 
     def _setup_ui(self):
-        """Organiza la construcción de la interfaz principal"""
+        
         self._setup_header()
         self._setup_workspace()
         self._setup_panels()
         self._assemble_layout()
 
     def _setup_header(self):
-        """Configura la barra de pestañas y botones de ejecución"""
+        
         self.header_widget = QWidget()
         self.header_layout = QHBoxLayout(self.header_widget)
         self.header_layout.setContentsMargins(10, 5, 10, 5)

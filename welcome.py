@@ -15,12 +15,12 @@ class WelcomeScreen(QWidget):
         layout.setAlignment(Qt.AlignCenter)
         
         # Títulos
-        title = QLabel("Compillador")
+        title = QLabel("CompilladorIDE")
         title.setObjectName("title")
         title.setAlignment(Qt.AlignCenter)
         layout.addWidget(title)
         
-        subtitle = QLabel("Compilador para los Compillas")
+        subtitle = QLabel("IDE para los Compillas")
         subtitle.setObjectName("subtitle")
         subtitle.setAlignment(Qt.AlignCenter)
         layout.addWidget(subtitle)
