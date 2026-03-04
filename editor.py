@@ -24,6 +24,10 @@ class CodeEditor(QPlainTextEdit):
         self.update_line_number_area_width(0)
         self.highlight_current_line() # Asegura resaltado inicial
         
+        fuente_codigo = self.font()
+        fuente_codigo.setFamily("Consolas") # O usa "Fira Code" si la tienes instalada
+        fuente_codigo.setPointSize(11)
+        self.setFont(fuente_codigo)
         
         self.setLineWrapMode(QPlainTextEdit.NoWrap)
 
@@ -72,7 +76,7 @@ class CodeEditor(QPlainTextEdit):
             if block.isVisible() and bottom >= event.rect().top():
                 number = str(block_number + 1)
                 painter.setPen(QColor("#858585"))
-                painter.drawText(0, top, self.line_number_area.width() - 5, self.fontMetrics().height(), Qt.AlignRight | Qt.AlignVCenter, number)
+                painter.drawText(0, top, self.line_number_area.width(), self.fontMetrics().height(), Qt.AlignCenter, number)
             block = block.next()
             top = bottom
             bottom = top + round(self.blockBoundingRect(block).height())
