@@ -3,7 +3,7 @@ import os
 from PySide6.QtWidgets import (QMainWindow, QSplitter, QTabWidget, QTextEdit, 
                              QStatusBar, QWidget, QHBoxLayout, QVBoxLayout, 
                              QPushButton, QTabBar, QStackedWidget, QToolButton,
-                             QFileDialog)
+                             QFileDialog, QLabel, QListWidget)
 from PySide6.QtGui import QAction
 from PySide6.QtCore import Qt, QSize
 import qtawesome as qta
@@ -44,16 +44,53 @@ class MainWindow(QMainWindow):
         self.header_layout.setContentsMargins(10, 5, 10, 5)
         self.header_layout.setSpacing(10)
 
+        # Logo + app name (left)
+        logo_label = QLabel()
+        logo_label.setObjectName('app_logo_label')
+        logo_label.setPixmap(qta.icon('fa5s.code', color='#4ebfff').pixmap(18, 18))
+        self.header_layout.addWidget(logo_label)
+
+        app_name = QLabel("CompilladorIDE")
+        app_name.setObjectName('app_name')
+        self.header_layout.addWidget(app_name)
+
         self.file_tabs_bar = QTabBar()
         self.file_tabs_bar.setTabsClosable(True)
         self.file_tabs_bar.setMovable(True)
         self.file_tabs_bar.tabCloseRequested.connect(self.cerrar_pestana)
         self.file_tabs_bar.currentChanged.connect(self.cambiar_archivo_activo)
+        # Quick toolbar (new/open/save) next to tabs
+        self.header_layout.addWidget(self.file_tabs_bar)
 
-        self.btn_lexico = self._create_tool_button('fa5s.search', "Análisis Léxico")
-        self.btn_sintactico = self._create_tool_button('fa5s.code-branch', "Análisis Sintáctico")
-        self.btn_semantico = self._create_tool_button('fa5s.check-circle', "Análisis Semántico")
-        self.btn_intermedio = self._create_tool_button('fa5s.file-code', "Generar Código Intermedio")
+        self.top_btn_new = self._create_tool_button('fa5s.file-medical', "Nuevo")
+        self.top_btn_open = self._create_tool_button('fa5s.folder-open', "Abrir")
+        self.top_btn_save = self._create_tool_button('fa5s.save', "Guardar")
+        self.top_btn_new.setObjectName('top_toolbar_btn')
+        self.top_btn_open.setObjectName('top_toolbar_btn')
+        self.top_btn_save.setObjectName('top_toolbar_btn')
+
+        self.top_btn_new.clicked.connect(self.nuevo_archivo)
+        self.top_btn_open.clicked.connect(self.abrir_archivo)
+        self.top_btn_save.clicked.connect(self.guardar_archivo)
+
+        self.top_btn_save_as = self._create_tool_button('fa5s.save', "Guardar como")
+        self.top_btn_close = self._create_tool_button('fa5s.window-close', "Cerrar")
+        self.top_btn_save_as.setObjectName('top_toolbar_btn')
+        self.top_btn_close.setObjectName('top_toolbar_btn')
+        self.top_btn_save_as.clicked.connect(self.guardar_como)
+        self.top_btn_close.clicked.connect(self.cerrar_archivo_actual)
+
+        self.header_layout.addWidget(self.top_btn_new)
+        self.header_layout.addWidget(self.top_btn_open)
+        self.header_layout.addWidget(self.top_btn_save)
+        self.header_layout.addWidget(self.top_btn_save_as)
+        self.header_layout.addWidget(self.top_btn_close)
+
+        # Action buttons: run analysis and show panels
+        self.btn_lexico = self._create_tool_button('fa5s.search', "Análisis Léxico (F6)")
+        self.btn_sintactico = self._create_tool_button('fa5s.project-diagram', "Análisis Sintáctico (F7)")
+        self.btn_semantico = self._create_tool_button('fa5s.lightbulb', "Análisis Semántico (F8)")
+        self.btn_intermedio = self._create_tool_button('fa5s.code', "Generar Código Intermedio (F9)")
         self.btn_run = self._create_tool_button('fa5s.play', "Ejecutar Programa", color='#4ec9b0')
 
         self.btn_lexico.clicked.connect(self.ejecutar_lexico)
@@ -81,6 +118,22 @@ class MainWindow(QMainWindow):
         self.view_stack = QStackedWidget()
         self.welcome_screen = WelcomeScreen(self)
         
+        # Sidebar / file explorer
+        self.sidebar = QWidget()
+        self.sidebar.setObjectName('sidebar')
+        sidebar_layout = QVBoxLayout(self.sidebar)
+        sidebar_layout.setContentsMargins(6, 6, 6, 6)
+        sidebar_layout.setSpacing(6)
+
+        sidebar_title = QLabel("EXPLORADOR")
+        sidebar_title.setObjectName('sidebar_title')
+        sidebar_layout.addWidget(sidebar_title)
+
+        self.file_explorer = QListWidget()
+        self.file_explorer.setObjectName('file_explorer')
+        self.file_explorer.itemClicked.connect(self._on_explorer_item_clicked)
+        sidebar_layout.addWidget(self.file_explorer)
+
         self.editor_workspace = QWidget()
         workspace_layout = QVBoxLayout(self.editor_workspace)
         workspace_layout.setContentsMargins(0, 0, 0, 0)
@@ -93,12 +146,69 @@ class MainWindow(QMainWindow):
         self.view_stack.addWidget(self.welcome_screen)
         self.view_stack.addWidget(self.editor_workspace)
 
+    def _on_explorer_item_clicked(self, item):
+        row = self.file_explorer.row(item)
+        if row >= 0 and row < self.file_tabs_bar.count():
+            self.file_tabs_bar.setCurrentIndex(row)
+            self.editor_stack.setCurrentIndex(row)
+
+    def show_analysis_tab(self, index: int):
+        # Open right analysis panel and select tab
+        self.restaurar_panel_derecho()
+        if 0 <= index < self.tabs_analisis.count():
+            self.tabs_analisis.setCurrentIndex(index)
+
+    def show_console_tab(self, index: int):
+        # Open bottom console and select tab
+        self.restaurar_panel_inferior()
+        if 0 <= index < self.consola_inferior.count():
+            self.consola_inferior.setCurrentIndex(index)
+
     def _setup_panels(self):
         paneles_analisis = ["Léxico", "Sintáctico", "Semántico", "Tabla Símbolos", "C. Intermedio"]
+        # Create analysis toolbar (icons to open specific analysis tabs)
+        self.analysis_toolbar = QWidget()
+        at_layout = QHBoxLayout(self.analysis_toolbar)
+        at_layout.setContentsMargins(6, 6, 6, 6)
+        at_layout.setSpacing(6)
+        analysis_icons = [
+            ('fa5s.search', 'Léxico', 0),
+            ('fa5s.project-diagram', 'Sintáctico', 1),
+            ('fa5s.lightbulb', 'Semántico', 2),
+            ('fa5s.table', 'Tabla Símbolos', 3),
+            ('fa5s.code', 'C. Intermedio', 4),
+        ]
+        for icon, tip, idx in analysis_icons:
+            btn = QToolButton()
+            btn.setIcon(qta.icon(icon, color='#cfd8df'))
+            btn.setToolTip(tip)
+            btn.setFixedSize(28, 28)
+            btn.clicked.connect(lambda _, i=idx: self.show_analysis_tab(i))
+            at_layout.addWidget(btn)
+
         for nombre in paneles_analisis:
             txt_edit = QTextEdit()
             txt_edit.setReadOnly(True)
             self.tabs_analisis.addTab(txt_edit, nombre)
+
+        # Console toolbar (quick open for error/result tabs)
+        self.console_toolbar = QWidget()
+        ct_layout = QHBoxLayout(self.console_toolbar)
+        ct_layout.setContentsMargins(6, 6, 6, 6)
+        ct_layout.setSpacing(6)
+        console_icons = [
+            ('fa5s.exclamation-circle', 'Errores Léxicos', 0),
+            ('fa5s.exclamation-triangle', 'Errores Sintácticos', 1),
+            ('fa5s.bug', 'Errores Semánticos', 2),
+            ('fa5s.terminal', 'Resultados', 3),
+        ]
+        for icon, tip, idx in console_icons:
+            btn = QToolButton()
+            btn.setIcon(qta.icon(icon, color='#cfd8df'))
+            btn.setToolTip(tip)
+            btn.setFixedSize(28, 28)
+            btn.clicked.connect(lambda _, i=idx: self.show_console_tab(i))
+            ct_layout.addWidget(btn)
 
         for nombre in ["Errores Léxicos", "Errores Sintácticos", "Errores Semánticos", "Resultados"]:
             txt_edit = QTextEdit()
@@ -113,11 +223,31 @@ class MainWindow(QMainWindow):
 
         
         self.h_splitter = QSplitter(Qt.Horizontal)
+        # Add sidebar first (like VS Code) so files appear on the left
+        self.h_splitter.addWidget(self.sidebar)
         self.h_splitter.addWidget(self.editor_container)
         
         self.panel_derecho = QWidget()
         panel_derecho_layout = QVBoxLayout(self.panel_derecho)
         panel_derecho_layout.setContentsMargins(5, 10, 10, 5)
+        # Header for right panel with close button
+        right_header = QWidget()
+        rh_layout = QHBoxLayout(right_header)
+        rh_layout.setContentsMargins(0, 0, 0, 0)
+        rh_layout.setSpacing(6)
+        right_title = QLabel("Panel de Análisis")
+        rh_layout.addWidget(right_title)
+        rh_layout.addStretch()
+        btn_close_right = QToolButton()
+        btn_close_right.setIcon(qta.icon('fa5s.times', color='#ff5c5c'))
+        btn_close_right.setIconSize(QSize(16, 16))
+        btn_close_right.setFixedSize(28, 28)
+        btn_close_right.setToolTip("Cerrar panel de análisis")
+        btn_close_right.setStyleSheet("QToolButton { background: transparent; border-radius: 4px; } QToolButton:hover { background: rgba(255,92,92,0.12); }")
+        btn_close_right.clicked.connect(self.close_panel_derecho)
+        rh_layout.addWidget(btn_close_right)
+
+        panel_derecho_layout.addWidget(right_header)
         panel_derecho_layout.addWidget(self.tabs_analisis)
         self.h_splitter.addWidget(self.panel_derecho)
 
@@ -127,6 +257,24 @@ class MainWindow(QMainWindow):
         self.panel_inferior = QWidget()
         panel_inferior_layout = QVBoxLayout(self.panel_inferior)
         panel_inferior_layout.setContentsMargins(10, 5, 10, 10)
+        # Header for bottom console with close button
+        bottom_header = QWidget()
+        bh_layout = QHBoxLayout(bottom_header)
+        bh_layout.setContentsMargins(0, 0, 0, 0)
+        bh_layout.setSpacing(6)
+        bottom_title = QLabel("Consola")
+        bh_layout.addWidget(bottom_title)
+        bh_layout.addStretch()
+        btn_close_bottom = QToolButton()
+        btn_close_bottom.setIcon(qta.icon('fa5s.times', color='#ff5c5c'))
+        btn_close_bottom.setIconSize(QSize(16, 16))
+        btn_close_bottom.setFixedSize(28, 28)
+        btn_close_bottom.setToolTip("Cerrar consola")
+        btn_close_bottom.setStyleSheet("QToolButton { background: transparent; border-radius: 4px; } QToolButton:hover { background: rgba(255,92,92,0.12); }")
+        btn_close_bottom.clicked.connect(self.close_panel_inferior)
+        bh_layout.addWidget(btn_close_bottom)
+
+        panel_inferior_layout.addWidget(bottom_header)
         panel_inferior_layout.addWidget(self.consola_inferior)
         self.v_splitter.addWidget(self.panel_inferior)
 
@@ -134,7 +282,6 @@ class MainWindow(QMainWindow):
         self.v_splitter.setStretchFactor(1, 1)
         self.setCentralWidget(self.v_splitter)
 
-    # ||||------------------------------ CONTROL DE ESTADO DE LA UI -----------------------------------||||
     # ||||------------------------------ CONTROL DE ESTADO DE LA UI -----------------------------------||||
     def actualizar_estado_ui(self):
         hay_archivo = self.editor_actual() is not None
@@ -168,9 +315,15 @@ class MainWindow(QMainWindow):
     def restaurar_panel_derecho(self):
         self.panel_derecho.setVisible(True) # Forzamos a que aparezca por primera vez
         sizes = self.h_splitter.sizes()
-        if sizes[1] == 0: 
+        # If the right panel is collapsed (size 0), restore sensible proportions.
+        # h_splitter has three widgets: [sidebar, editor_container, panel_derecho]
+        if len(sizes) >= 3 and sizes[2] == 0:
             total = sum(sizes) or self.width()
-            self.h_splitter.setSizes([int(total * 0.7), int(total * 0.3)]) 
+            # allocate ~15% sidebar, ~70% editor, ~15% right panel
+            self.h_splitter.setSizes([int(total * 0.15), int(total * 0.7), int(total * 0.15)])
+        elif len(sizes) == 2 and sizes[1] == 0:
+            total = sum(sizes) or self.width()
+            self.h_splitter.setSizes([int(total * 0.7), int(total * 0.3)])
 
     def restaurar_panel_inferior(self):
         self.panel_inferior.setVisible(True) # Forzamos a que aparezca por primera vez
@@ -178,6 +331,21 @@ class MainWindow(QMainWindow):
         if sizes[1] == 0:  
             total = sum(sizes) or self.height()
             self.v_splitter.setSizes([int(total * 0.75), int(total * 0.25)])
+
+    def close_panel_derecho(self):
+        # Hide right panel and adjust splitter sizes
+        self.panel_derecho.setVisible(False)
+        sizes = self.h_splitter.sizes()
+        total = sum(sizes) or self.width()
+        # allocate ~15% to sidebar, remaining to editor, right panel 0
+        self.h_splitter.setSizes([int(total * 0.15), int(total * 0.85), 0])
+
+    def close_panel_inferior(self):
+        # Hide bottom panel and collapse it
+        self.panel_inferior.setVisible(False)
+        sizes = self.v_splitter.sizes()
+        total = sum(sizes) or self.height()
+        self.v_splitter.setSizes([int(total * 1.0), 0])
 
     # ||||------------------------------- LÓGICA DE ARCHIVOS -------------------------------------||||
     def editor_actual(self):
@@ -191,6 +359,8 @@ class MainWindow(QMainWindow):
         idx = self.editor_stack.addWidget(nuevo_ed)
         
         self.file_tabs_bar.addTab("Sin título")
+        # Add to file explorer as well
+        self.file_explorer.addItem("Sin título")
         
         btn_cerrar = QToolButton()
         btn_cerrar.setIcon(qta.icon('fa5s.times', color='#bbbbbb'))
@@ -218,7 +388,9 @@ class MainWindow(QMainWindow):
             nuevo_ed.cursorPositionChanged.connect(self.actualizar_status)
             nuevo_ed.textChanged.connect(self.actualizar_status) # <-- NUEVO
             idx = self.editor_stack.addWidget(nuevo_ed)
-            self.file_tabs_bar.addTab(os.path.basename(path))
+            name = os.path.basename(path)
+            self.file_tabs_bar.addTab(name)
+            self.file_explorer.addItem(name)
             
             btn_cerrar = QToolButton()
             btn_cerrar.setIcon(qta.icon('fa5s.times', color='#bbbbbb'))
@@ -241,7 +413,15 @@ class MainWindow(QMainWindow):
             if hasattr(ed, 'file_path') and ed.file_path:
                 with open(ed.file_path, 'w', encoding='utf-8') as f:
                     f.write(ed.toPlainText())
-                self.status_bar.showMessage(f"Archivo guardado: {os.path.basename(ed.file_path)}", 3000)
+                # Update tab and explorer entry if present
+                name = os.path.basename(ed.file_path)
+                cur = self.file_tabs_bar.currentIndex()
+                if cur != -1:
+                    self.file_tabs_bar.setTabText(cur, name)
+                if cur >= 0 and cur < self.file_explorer.count():
+                    self.file_explorer.item(cur).setText(name)
+
+                self.status_bar.showMessage(f"Archivo guardado: {name}", 3000)
             else:
                 self.guardar_como()
 
@@ -254,8 +434,15 @@ class MainWindow(QMainWindow):
                     f.write(ed.toPlainText())
                 
                 ed.file_path = path
-                self.file_tabs_bar.setTabText(self.file_tabs_bar.currentIndex(), os.path.basename(path))
-                self.status_bar.showMessage(f"Archivo guardado como: {os.path.basename(path)}", 3000)
+                name = os.path.basename(path)
+                cur = self.file_tabs_bar.currentIndex()
+                if cur != -1:
+                    self.file_tabs_bar.setTabText(cur, name)
+                # update explorer entry
+                if cur >= 0 and cur < self.file_explorer.count():
+                    self.file_explorer.item(cur).setText(name)
+
+                self.status_bar.showMessage(f"Archivo guardado como: {name}", 3000)
 
     def cerrar_archivo_actual(self):
         idx = self.file_tabs_bar.currentIndex()
@@ -266,6 +453,9 @@ class MainWindow(QMainWindow):
         widget = self.editor_stack.widget(index)
         self.editor_stack.removeWidget(widget)
         self.file_tabs_bar.removeTab(index)
+        # remove from explorer
+        if index >= 0 and index < self.file_explorer.count():
+            self.file_explorer.takeItem(index)
         widget.deleteLater()
         
         if self.file_tabs_bar.count() == 0:
@@ -278,6 +468,9 @@ class MainWindow(QMainWindow):
         self.editor_stack.setCurrentIndex(index)
         self.actualizar_status()
         self.actualizar_estado_ui()
+        # highlight in explorer
+        if index >= 0 and index < self.file_explorer.count():
+            self.file_explorer.setCurrentRow(index)
 
     def actualizar_status(self):
         ed = self.editor_actual()
