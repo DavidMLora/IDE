@@ -56,7 +56,7 @@ class MainWindow(QMainWindow):
 
         self.file_tabs_bar = QTabBar()
         self.file_tabs_bar.setTabsClosable(True)
-        self.file_tabs_bar.setMovable(True)
+        self.file_tabs_bar.setMovable(False)
         self.file_tabs_bar.tabCloseRequested.connect(self.cerrar_pestana)
         self.file_tabs_bar.currentChanged.connect(self.cambiar_archivo_activo)
         # Quick toolbar (new/open/save) next to tabs
@@ -370,7 +370,7 @@ class MainWindow(QMainWindow):
             QToolButton { border: none; padding: 0px; border-radius: 4px; }
             QToolButton:hover { background-color: #c42b1c; color: white; }
         """)
-        btn_cerrar.clicked.connect(lambda: self.cerrar_pestana(self.file_tabs_bar.currentIndex()))
+        btn_cerrar.clicked.connect(self.cerrar_pestana_desde_boton)
         
         self.file_tabs_bar.setTabButton(idx, QTabBar.RightSide, btn_cerrar)
         self.file_tabs_bar.setCurrentIndex(idx)
@@ -400,7 +400,7 @@ class MainWindow(QMainWindow):
                 QToolButton { border: none; padding: 0px; border-radius: 4px; }
                 QToolButton:hover { background-color: #c42b1c; color: white; }
             """)
-            btn_cerrar.clicked.connect(lambda: self.cerrar_pestana(self.file_tabs_bar.currentIndex()))
+            btn_cerrar.clicked.connect(self.cerrar_pestana_desde_boton)
             self.file_tabs_bar.setTabButton(idx, QTabBar.RightSide, btn_cerrar)
 
             self.file_tabs_bar.setCurrentIndex(idx)
@@ -463,6 +463,16 @@ class MainWindow(QMainWindow):
             self.status_bar.clearMessage()
         
         self.actualizar_estado_ui()
+
+    def cerrar_pestana_desde_boton(self):
+        # self.sender() detecta exactamente cuál botón 'X' fue el que se clickeó
+        boton_presionado = self.sender() 
+        
+        # Buscamos a qué pestaña le pertenece este botón
+        for i in range(self.file_tabs_bar.count()):
+            if self.file_tabs_bar.tabButton(i, QTabBar.RightSide) == boton_presionado:
+                self.cerrar_pestana(i)
+                break
 
     def cambiar_archivo_activo(self, index):
         self.editor_stack.setCurrentIndex(index)

@@ -253,4 +253,41 @@ WELCOME_STYLES = """
         color: #bfc7cf;
         font-size: 13px;
     }
+    /* ======== SCROLLBARS ======== */
+    QScrollBar:vertical {
+        border: none;
+        background: #1e1e1e;
+        width: 12px;
+        margin: 0px 0px 0px 0px;
+    }
+    QScrollBar::handle:vertical {
+        background: #424242;
+        min-height: 20px;
+        border-radius: 6px;
+    }
+    QScrollBar::handle:vertical:hover {
+        background: #4f4f4f;
+    }
+    QScrollBar::add-line:vertical, QScrollBar::sub-line:vertical {
+        border: none;
+        background: none;
+    }
+    QScrollBar:horizontal {
+        border: none;
+        background: #1e1e1e;
+        height: 12px;
+        margin: 0px 0px 0px 0px;
+    }
+    QScrollBar::handle:horizontal {
+        background: #424242;
+        min-width: 20px;
+        border-radius: 6px;
+    }
+    QScrollBar::handle:horizontal:hover {
+        background: #4f4f4f;
+    }
+    QScrollBar::add-line:horizontal, QScrollBar::sub-line:horizontal {
+        border: none;
+        background: none;
+    }
 """
