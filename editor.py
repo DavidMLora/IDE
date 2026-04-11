@@ -47,6 +47,8 @@ class LexerHighlighter(QSyntaxHighlighter):
         formato_relacionales = QTextCharFormat()
         formato_relacionales.setForeground(QColor("#4ec9b0")) # Turquesa
 
+        formato_cadenas = QTextCharFormat()
+        formato_cadenas.setForeground(QColor("#B3B3B3"))
         # --- REGLAS DE EXPRESIONES REGULARES ---
         # EL ORDEN ES VITAL: Las reglas generales van primero, las específicas después.
 
@@ -56,7 +58,7 @@ class LexerHighlighter(QSyntaxHighlighter):
         self.rules.append((patron_id, formato_identificadores))
 
         # 2. Palabras Reservadas (Color 4) - Van después para SOBREESCRIBIR a los identificadores
-        reservadas = ["if", "else", "end", "do", "while", "switch", "case", "int", "float", "main", "cin", "cout"]
+        reservadas = ["if", "else", "end", "do", "while", "switch", "case", "int", "float", "main", "cin", "cout", "for"]
         for palabra in reservadas:
             patron = QRegularExpression(rf"\b{palabra}\b")
             self.rules.append((patron, formato_reservadas))
@@ -69,9 +71,20 @@ class LexerHighlighter(QSyntaxHighlighter):
         patron_aritmeticos = QRegularExpression(r"(\+\+|--|\+|-|\*|/|%|\^)")
         self.rules.append((patron_aritmeticos, formato_aritmeticos))
 
+
+        patron_parentesis = QRegularExpression(r"(\(|\)|\{|\}|\[|\])")
+        self.rules.append((patron_parentesis, formato_aritmeticos))
+
+
         # 5. Operadores Relacionales y Lógicos (Color 6)
         patron_relacionales = QRegularExpression(r"(<=|>=|==|!=|<|>|&&|\|\||!)")
         self.rules.append((patron_relacionales, formato_relacionales))
+
+        patron_comillas_dobles = QRegularExpression(r'"[^"\\]*(\\.[^"\\]*)*"')
+        self.rules.append((patron_comillas_dobles, formato_cadenas))
+
+        patron_comillas_simples = QRegularExpression(r"'[^'\\]*(\\.[^'\\]*)*'")
+        self.rules.append((patron_comillas_simples, formato_cadenas))
 
         # 6. Comentarios de una línea (Color 3)
         patron_comentario_linea = QRegularExpression(r"//[^\n]*")
