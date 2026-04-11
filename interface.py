@@ -496,13 +496,12 @@ class MainWindow(QMainWindow):
             cursor = ed.textCursor()
             caracteres = len(ed.toPlainText())
             self.status_bar.showMessage(f"Línea: {cursor.blockNumber()+1} | Columna: {cursor.columnNumber()} | Caracteres: {caracteres}")
+
     def recargar_pestanas_abiertas(self, rutas_a_recargar):
         """
         Busca si los archivos generados están abiertos en alguna pestaña del IDE
         y actualiza su contenido leyendo el disco duro nuevamente.
         """
-        import os
-        
         # 1. Normalizamos las rutas objetivo (convierte todas las / y \ al mismo formato)
         rutas_normalizadas = [os.path.normcase(os.path.normpath(r)) for r in rutas_a_recargar]
 
@@ -511,7 +510,6 @@ class MainWindow(QMainWindow):
             
             # 2. Verificamos que el editor tenga un archivo asignado
             if hasattr(ed, 'file_path') and ed.file_path:
-                # Normalizamos la ruta de la pestaña actual
                 ruta_editor = os.path.normcase(os.path.normpath(ed.file_path))
                 
                 # 3. Comparamos las rutas normalizadas
@@ -532,30 +530,7 @@ class MainWindow(QMainWindow):
                                 ed.setTextCursor(cursor)
                         except Exception as e:
                             print(f"No se pudo recargar el archivo {ed.file_path}: {e}")
-        """
-        Busca si los archivos generados están abiertos en alguna pestaña del IDE
-        y actualiza su contenido leyendo el disco duro nuevamente.
-        """
-        import os
-        for i in range(self.editor_stack.count()):
-            ed = self.editor_stack.widget(i)
-            # Verificamos si la pestaña actual tiene un archivo asociado y si es uno de los que queremos recargar
-            if hasattr(ed, 'file_path') and ed.file_path in rutas_a_recargar:
-                if os.path.exists(ed.file_path):
-                    with open(ed.file_path, 'r', encoding='utf-8') as f:
-                        nuevo_texto = f.read()
-                    
-                    # Solo actualizamos el texto si realmente cambió (evita parpadeos en la pantalla)
-                    if ed.toPlainText() != nuevo_texto:
-                        # Guardamos la posición del cursor para que la pantalla no salte hasta arriba
-                        cursor = ed.textCursor()
-                        posicion = cursor.position()
-                        
-                        ed.setPlainText(nuevo_texto)
-                        
-                        # Restauramos el cursor
-                        cursor.setPosition(min(posicion, len(nuevo_texto)))
-                        ed.setTextCursor(cursor)
+
     def obtener_codigo(self):
         ed = self.editor_actual()
         if not ed:
@@ -563,10 +538,7 @@ class MainWindow(QMainWindow):
         return ed.toPlainText()
 
     def ejecutar_lexico(self):
-        import sys
-        import os
-        import subprocess
-
+        # UNIFICADO Y CORREGIDO
         ed = self.editor_actual()
         if not ed: return
 
@@ -574,82 +546,10 @@ class MainWindow(QMainWindow):
             self.guardar_como()
             if not ed.file_path: return
 
-        # El IDE solo guarda su propio código fuente (esto sí le toca al IDE)
-        self.guardar_archivo()
-        self.restaurar_panel_derecho()
-        self.restaurar_panel_inferior()
-        self.status_bar.showMessage("Ejecutando Análisis Léxico externo...", 3000)
-
-        DIRECTORIO_BASE = os.path.dirname(os.path.abspath(__file__))
-        RUTA_COMPILADOR = os.path.join(DIRECTORIO_BASE, "comp", "lexer.py")
-
-        try:
-            # Mandamos a llamar al lexer.py (Él ya se encarga de sobreescribir y guardar bien)
-            proceso = subprocess.run(
-                [sys.executable, RUTA_COMPILADOR, ed.file_path],
-                capture_output=True,
-                text=True,
-                encoding='utf-8'
-            )
-            
-            # Reconstruimos la ruta para leer lo que el lexer acaba de crear
-            directorio, archivo = os.path.split(ed.file_path)
-            nombre_base, _ = os.path.splitext(archivo)
-            ruta_tokens = os.path.join(directorio, f"{nombre_base}_tokens.txt")
-            ruta_errores = os.path.join(directorio, f"{nombre_base}_errores.txt")
-
-            tabla_tokens = self.tabs_analisis.widget(0)
-            tabla_tokens.setRowCount(0) 
-
-            # Llenar la tabla de tokens
-            if os.path.exists(ruta_tokens):
-                with open(ruta_tokens, 'r', encoding='utf-8') as f_tok:
-                    lineas = f_tok.readlines()
-                
-                for linea in lineas[2:]:
-                    if not linea.strip(): continue
-                    partes = linea.split('|')
-                    if len(partes) == 4:
-                        token = partes[0].split(':', 1)[1].strip()
-                        lexema = partes[1].split(':', 1)[1].strip()
-                        fila = partes[2].split(':', 1)[1].strip()
-                        columna = partes[3].split(':', 1)[1].strip()
-
-                        row_position = tabla_tokens.rowCount()
-                        tabla_tokens.insertRow(row_position)
-                        tabla_tokens.setItem(row_position, 0, QTableWidgetItem(token))
-                        tabla_tokens.setItem(row_position, 1, QTableWidgetItem(lexema))
-                        tabla_tokens.setItem(row_position, 2, QTableWidgetItem(fila))
-                        tabla_tokens.setItem(row_position, 3, QTableWidgetItem(columna))
-            else:
-                tabla_tokens.insertRow(0)
-                tabla_tokens.setItem(0, 0, QTableWidgetItem("ERROR CRÍTICO"))
-                tabla_tokens.setItem(0, 1, QTableWidgetItem("El compilador se ejecutó pero NO creó el archivo de tokens."))
-                self.consola_inferior.widget(0).setPlainText(f"Salida de la consola:\n{proceso.stderr}\n{proceso.stdout}")
-                self.consola_inferior.setCurrentIndex(0) 
-
-            self.tabs_analisis.setCurrentIndex(0)
-
-            # Llenar la consola de errores
-            if os.path.exists(ruta_errores):
-                with open(ruta_errores, 'r', encoding='utf-8') as f_err:
-                    contenido_errores = f_err.read()
-                
-                self.consola_inferior.widget(0).setPlainText(contenido_errores)
-                if proceso.returncode != 0:
-                    self.consola_inferior.setCurrentIndex(0) 
-            else:
-                self.consola_inferior.widget(0).setPlainText(">> No se generó el archivo de errores.")
-
-        except Exception as e:
-            self.consola_inferior.widget(0).setPlainText(f"Error al intentar ejecutar el compilador:\n{str(e)}")
-            self.consola_inferior.setCurrentIndex(0)
-        ed = self.editor_actual()
-        if not ed: return
-
-        if not hasattr(ed, 'file_path') or not ed.file_path:
-            self.guardar_como()
-            if not ed.file_path: return
+        # Evita ejecutar si el código está completamente vacío
+        if not ed.toPlainText().strip():
+            self.status_bar.showMessage("El archivo está vacío. Escribe algo de código primero.", 3000)
+            return
 
         # 1. Guardar los cambios del editor en el archivo físico
         self.guardar_archivo()
@@ -666,19 +566,19 @@ class MainWindow(QMainWindow):
         ruta_tokens = os.path.join(directorio, f"{nombre_base}_tokens.txt")
         ruta_errores = os.path.join(directorio, f"{nombre_base}_errores.txt")
 
-        # 3. ELIMINAR LOS ARCHIVOS VIEJOS (Para evitar Datos Fantasma)
+        # 3. ELIMINAR LOS ARCHIVOS VIEJOS
         if os.path.exists(ruta_tokens):
             os.remove(ruta_tokens)
         if os.path.exists(ruta_errores):
             os.remove(ruta_errores)
 
         try:
-            # 4. Usar sys.executable asegura que se use el mismo Python (soluciona conflictos py vs python)
+            # 4. Usar sys.executable asegura que se use el mismo Python
             proceso = subprocess.run(
                 [sys.executable, RUTA_COMPILADOR, ed.file_path],
                 capture_output=True,
                 text=True,
-                encoding='cp1252'
+                encoding='utf-8' # OBLIGATORIO UTF-8
             )
             
             # Limpiar la tabla antes de llenarla
@@ -724,79 +624,11 @@ class MainWindow(QMainWindow):
             else:
                 self.consola_inferior.widget(0).setPlainText(f">> No se generó el archivo de errores.\nSalida de la consola:\n{proceso.stderr}")
 
+            # Recargar archivos en el IDE si están abiertos
+            self.recargar_pestanas_abiertas([ruta_tokens, ruta_errores])
+
         except Exception as e:
             self.consola_inferior.widget(0).setPlainText(f"Error crítico al intentar ejecutar el compilador:\n{str(e)}")
-            self.consola_inferior.setCurrentIndex(0)
-        ed = self.editor_actual()
-        if not ed: return
-
-        if not hasattr(ed, 'file_path') or not ed.file_path:
-            self.guardar_como()
-            if not ed.file_path: return
-
-        self.guardar_archivo()
-        self.restaurar_panel_derecho()
-        self.restaurar_panel_inferior()
-        self.status_bar.showMessage("Ejecutando Análisis Léxico externo...", 3000)
-
-        DIRECTORIO_BASE = os.path.dirname(os.path.abspath(__file__))
-        RUTA_COMPILADOR = os.path.join(DIRECTORIO_BASE, "comp", "lexer.py")
-
-        try:
-            proceso = subprocess.run(
-                ['python', RUTA_COMPILADOR, ed.file_path],
-                capture_output=True,
-                text=True,
-                encoding='utf-8'
-            )
-            
-            directorio, archivo = os.path.split(ed.file_path)
-            nombre_base, _ = os.path.splitext(archivo)
-            ruta_tokens = os.path.join(directorio, f"{nombre_base}_tokens.txt")
-            ruta_errores = os.path.join(directorio, f"{nombre_base}_errores.txt")
-
-            tabla_tokens = self.tabs_analisis.widget(0)
-            tabla_tokens.setRowCount(0) 
-
-            if os.path.exists(ruta_tokens):
-                with open(ruta_tokens, 'r', encoding='utf-8') as f_tok:
-                    lineas = f_tok.readlines()
-                
-                for linea in lineas[2:]:
-                    if not linea.strip(): continue
-                    
-                    partes = linea.split('|')
-                    if len(partes) == 4:
-                        token = partes[0].split(':', 1)[1].strip()
-                        lexema = partes[1].split(':', 1)[1].strip()
-                        fila = partes[2].split(':', 1)[1].strip()
-                        columna = partes[3].split(':', 1)[1].strip()
-
-                        row_position = tabla_tokens.rowCount()
-                        tabla_tokens.insertRow(row_position)
-                        tabla_tokens.setItem(row_position, 0, QTableWidgetItem(token))
-                        tabla_tokens.setItem(row_position, 1, QTableWidgetItem(lexema))
-                        tabla_tokens.setItem(row_position, 2, QTableWidgetItem(fila))
-                        tabla_tokens.setItem(row_position, 3, QTableWidgetItem(columna))
-            else:
-                tabla_tokens.insertRow(0)
-                tabla_tokens.setItem(0, 0, QTableWidgetItem("ERROR"))
-                tabla_tokens.setItem(0, 1, QTableWidgetItem("No se encontró archivo _tokens.txt"))
-
-            self.tabs_analisis.setCurrentIndex(0)
-
-            if os.path.exists(ruta_errores):
-                with open(ruta_errores, 'r', encoding='utf-8') as f_err:
-                    contenido_errores = f_err.read()
-                
-                self.consola_inferior.widget(0).setPlainText(contenido_errores)
-                if proceso.returncode != 0:
-                    self.consola_inferior.setCurrentIndex(0) 
-            else:
-                self.consola_inferior.widget(0).setPlainText(">> No se generó el archivo de errores.")
-            self.recargar_pestanas_abiertas([ruta_tokens, ruta_errores])
-        except Exception as e:
-            self.consola_inferior.widget(0).setPlainText(f"Error al intentar ejecutar el compilador:\n{str(e)}")
             self.consola_inferior.setCurrentIndex(0)
 
     def ejecutar_sintactico(self):

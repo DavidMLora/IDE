@@ -1,4 +1,4 @@
-# lexer.py
+# comp/lexer.py
 import re
 import sys
 import argparse
@@ -27,7 +27,7 @@ REGLAS = [
     ('ID',               r'\b[a-zA-Z][a-zA-Z0-9]*\b'), # Identificadores
     ('NUEVA_LINEA',      r'\n'),                    # Saltos de línea
     ('ESPACIO',          r'[ \t]+'),                # Espacios y tabulaciones
-    ('MISMATCH',         r'.'),                     # Caracteres no válidos (ERROR)
+    ('MISMATCH',         r'.+'),                    # CORRECCIÓN: Agrupa caracteres no válidos (ERROR)
 ]
 
 # Compilar todas las reglas en una sola expresión regular
@@ -96,7 +96,7 @@ def generar_archivos(ruta_original, tokens, errores):
             lex_limpio = lexema.replace('\n', '\\n').replace('\r', '')
             f_tok.write(f"Token: {tipo:15} | Lexema: {lex_limpio:15} | Fila: {fila:3} | Col: {col:3}\n")
         
-        # 3. Magia Negra: Obligar al sistema operativo a vaciar la memoria RAM al disco duro
+        # 3. Obligar al sistema operativo a vaciar la memoria RAM al disco duro
         f_tok.flush()
         os.fsync(f_tok.fileno())
             
@@ -112,31 +112,8 @@ def generar_archivos(ruta_original, tokens, errores):
         
         f_err.flush()
         os.fsync(f_err.fileno())
-    # Obtener el nombre del archivo sin la extensión
-    directorio, archivo = os.path.split(ruta_original)
-    nombre_base, _ = os.path.splitext(archivo)
-    
-    ruta_tokens = os.path.join(directorio, f"{nombre_base}_tokens.txt")
-    ruta_errores = os.path.join(directorio, f"{nombre_base}_errores.txt")
 
-    # Escribir archivo de tokens
-    with open(ruta_tokens, 'w', encoding='utf-8') as f_tok:
-        f_tok.write("REPORTE DE TOKENS\n")
-        f_tok.write("-" * 50 + "\n")
-        for tipo, lexema, fila, col in tokens:
-            # Formateamos los saltos de línea en el lexema para que no rompan el reporte
-            lex_limpio = lexema.replace('\n', '\\n').replace('\r', '')
-            f_tok.write(f"Token: {tipo:15} | Lexema: {lex_limpio:15} | Fila: {fila:3} | Col: {col:3}\n")
-            
-    # Escribir archivo de errores
-    with open(ruta_errores, 'w', encoding='utf-8') as f_err:
-        f_err.write("REPORTE DE ERRORES LÉXICOS\n")
-        f_err.write("-" * 50 + "\n")
-        if not errores:
-            f_err.write("0 errores encontrados. Análisis léxico limpio.\n")
-        else:
-            for err in errores:
-                f_err.write(err + "\n")
+    # CORRECCIÓN: Se eliminó el bloque de código duplicado aquí abajo que volvía a escribir todo sin fsync.
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description="Analizador Léxico Independiente")
