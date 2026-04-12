@@ -136,9 +136,21 @@ GLOBAL_STYLES = """
     QLabel#sidebar_title {
         color: #cccccc;
         font-weight: bold;
-        padding: 10px 10px 5px 10px;
+        padding: 5px 0px; /* Reducido para alinear mejor con los botones */
         font-size: 11px;
         letter-spacing: 1px;
+    }
+    
+    /* ESTILO PARA LOS NUEVOS BOTONES DEL SIDEBAR */
+    QPushButton#sidebar_btn {
+        background: transparent;
+        color: #cccccc;
+        border-radius: 4px;
+        padding: 4px;
+    }
+    QPushButton#sidebar_btn:hover {
+        background-color: #2a2d2e;
+        color: #ffffff;
     }
     
     /* NUEVOS ESTILOS PARA EL ÁRBOL DE DIRECTORIOS */

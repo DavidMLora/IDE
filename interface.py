@@ -18,6 +18,37 @@ from welcome import WelcomeScreen
 from styles import GLOBAL_STYLES
 from terminal import TerminalIntegrada
 
+# ==========================================
+# CLASE NUEVA: Ventana Flotante NATIVA
+# ==========================================
+class FloatWindow(QWidget):
+    def __init__(self, title, child_widget, reattach_callback, main_ref):
+        super().__init__(None) 
+        self.setWindowTitle(title)
+        self.resize(600, 400)
+        self.child_widget = child_widget
+        self.reattach_callback = reattach_callback
+        self.main_ref = main_ref
+        self.is_manual_close = False
+        
+        layout = QVBoxLayout(self)
+        layout.setContentsMargins(0, 0, 0, 0)
+        layout.addWidget(self.child_widget)
+        
+        # Usar el GLOBAL_STYLES importado
+        self.setStyleSheet(GLOBAL_STYLES)
+        self.setWindowIcon(qta.icon('fa5s.code', color='#4ebfff'))
+        
+    def closeEvent(self, event):
+        # Si el usuario hace clic en la 'X' de la ventana, la reintegramos
+        if not self.is_manual_close:
+            self.is_manual_close = True # Evitamos bucles
+            self.reattach_callback()
+        event.accept()
+
+# ==========================================
+# VENTANA PRINCIPAL
+# ==========================================
 class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
@@ -35,6 +66,20 @@ class MainWindow(QMainWindow):
         self.setStatusBar(self.status_bar)
 
         self.actualizar_estado_ui()
+
+    # --- NUEVO: ASEGURAR QUE SE CIERREN LAS VENTANAS FLOTANTES AL SALIR ---
+    def closeEvent(self, event):
+        if getattr(self, 'win_sidebar', None):
+            self.win_sidebar.is_manual_close = True
+            self.win_sidebar.close()
+        if getattr(self, 'win_derecho', None):
+            self.win_derecho.is_manual_close = True
+            self.win_derecho.close()
+        if getattr(self, 'win_inferior', None):
+            self.win_inferior.is_manual_close = True
+            self.win_inferior.close()
+        event.accept()
+    # ----------------------------------------------------------------------
 
     def _setup_ui(self):
         self._setup_header()
@@ -65,30 +110,18 @@ class MainWindow(QMainWindow):
         
         self.header_layout.addWidget(self.file_tabs_bar)
 
-        self.top_btn_new = self._create_tool_button('fa5s.file-medical', "Nuevo")
-        self.top_btn_open = self._create_tool_button('fa5s.folder-open', "Abrir Archivo")
-        self.top_btn_open_folder = self._create_tool_button('fa5s.folder-plus', "Abrir Carpeta de Proyecto")
         self.top_btn_save = self._create_tool_button('fa5s.save', "Guardar")
         self.top_btn_save_as = self._create_tool_button('fa5s.save', "Guardar como")
         self.top_btn_close = self._create_tool_button('fa5s.window-close', "Cerrar")
 
-        self.top_btn_new.setObjectName('top_toolbar_btn')
-        self.top_btn_open.setObjectName('top_toolbar_btn')
-        self.top_btn_open_folder.setObjectName('top_toolbar_btn')
         self.top_btn_save.setObjectName('top_toolbar_btn')
         self.top_btn_save_as.setObjectName('top_toolbar_btn')
         self.top_btn_close.setObjectName('top_toolbar_btn')
 
-        self.top_btn_new.clicked.connect(self.nuevo_archivo)
-        self.top_btn_open.clicked.connect(self.abrir_archivo)
-        self.top_btn_open_folder.clicked.connect(self.abrir_carpeta)
         self.top_btn_save.clicked.connect(self.guardar_archivo)
         self.top_btn_save_as.clicked.connect(self.guardar_como)
         self.top_btn_close.clicked.connect(self.cerrar_archivo_actual)
 
-        self.header_layout.addWidget(self.top_btn_new)
-        self.header_layout.addWidget(self.top_btn_open)
-        self.header_layout.addWidget(self.top_btn_open_folder)
         self.header_layout.addWidget(self.top_btn_save)
         self.header_layout.addWidget(self.top_btn_save_as)
         self.header_layout.addWidget(self.top_btn_close)
@@ -105,7 +138,6 @@ class MainWindow(QMainWindow):
         self.btn_intermedio.clicked.connect(self.ejecutar_codigo_intermedio)
         self.btn_run.clicked.connect(self.ejecutar_programa)
 
-        self.header_layout.addWidget(self.file_tabs_bar)
         self.header_layout.addStretch()
         self.header_layout.addWidget(self.btn_lexico)
         self.header_layout.addWidget(self.btn_sintactico)
@@ -130,13 +162,34 @@ class MainWindow(QMainWindow):
         sidebar_layout.setContentsMargins(6, 6, 6, 6)
         sidebar_layout.setSpacing(6)
 
+        sidebar_header = QWidget()
+        sidebar_header_layout = QHBoxLayout(sidebar_header)
+        sidebar_header_layout.setContentsMargins(4, 0, 4, 0)
+        sidebar_header_layout.setSpacing(2)
+
         self.sidebar_title = QLabel("EXPLORADOR")
         self.sidebar_title.setObjectName('sidebar_title')
-        sidebar_layout.addWidget(self.sidebar_title)
+        sidebar_header_layout.addWidget(self.sidebar_title)
+        
+        sidebar_header_layout.addStretch()
 
-        # ========================================================
-        # NUEVO ÁRBOL SIMULADO MANUALMENTE (ADIÓS MODELOS COMPLEJOS)
-        # ========================================================
+        self.btn_float_sidebar = self._create_tool_button('fa5s.external-link-alt', "Separar Explorador")
+        self.btn_sidebar_new = self._create_tool_button('fa5s.file-medical', "Nuevo Archivo")
+        self.btn_sidebar_open = self._create_tool_button('fa5s.folder-open', "Abrir Archivo")
+        self.btn_sidebar_open_folder = self._create_tool_button('fa5s.folder-plus', "Abrir Carpeta")
+
+        for btn in [self.btn_float_sidebar, self.btn_sidebar_new, self.btn_sidebar_open, self.btn_sidebar_open_folder]:
+            btn.setObjectName('sidebar_btn')
+            btn.setFixedSize(26, 26) 
+            sidebar_header_layout.addWidget(btn)
+
+        self.btn_float_sidebar.clicked.connect(self.toggle_float_sidebar)
+        self.btn_sidebar_new.clicked.connect(self.nuevo_archivo)
+        self.btn_sidebar_open.clicked.connect(self.abrir_archivo)
+        self.btn_sidebar_open_folder.clicked.connect(self.abrir_carpeta)
+
+        sidebar_layout.addWidget(sidebar_header)
+
         self.ruta_proyecto = None
         
         self.file_explorer = QTreeWidget()
@@ -259,11 +312,20 @@ class MainWindow(QMainWindow):
         right_title = QLabel("Panel de Análisis")
         rh_layout.addWidget(right_title)
         rh_layout.addStretch()
+
+        self.btn_float_right = QToolButton()
+        self.btn_float_right.setIcon(qta.icon('fa5s.external-link-alt', color='#cccccc'))
+        self.btn_float_right.setFixedSize(28, 28)
+        self.btn_float_right.setToolTip("Separar panel")
+        self.btn_float_right.setStyleSheet("QToolButton { background: transparent; border-radius: 4px; } QToolButton:hover { background: #333333; }")
+        self.btn_float_right.clicked.connect(self.toggle_float_derecho)
+        rh_layout.addWidget(self.btn_float_right)
+
         btn_close_right = QToolButton()
         btn_close_right.setIcon(qta.icon('fa5s.times', color='#ff5c5c'))
         btn_close_right.setIconSize(QSize(16, 16))
         btn_close_right.setFixedSize(28, 28)
-        btn_close_right.setToolTip("Cerrar panel de análisis")
+        btn_close_right.setToolTip("Cerrar panel")
         btn_close_right.setStyleSheet("QToolButton { background: transparent; border-radius: 4px; } QToolButton:hover { background: rgba(255,92,92,0.12); }")
         btn_close_right.clicked.connect(self.close_panel_derecho)
         rh_layout.addWidget(btn_close_right)
@@ -286,6 +348,15 @@ class MainWindow(QMainWindow):
         bottom_title = QLabel("Consola")
         bh_layout.addWidget(bottom_title)
         bh_layout.addStretch()
+
+        self.btn_float_bottom = QToolButton()
+        self.btn_float_bottom.setIcon(qta.icon('fa5s.external-link-alt', color='#cccccc'))
+        self.btn_float_bottom.setFixedSize(28, 28)
+        self.btn_float_bottom.setToolTip("Separar consola")
+        self.btn_float_bottom.setStyleSheet("QToolButton { background: transparent; border-radius: 4px; } QToolButton:hover { background: #333333; }")
+        self.btn_float_bottom.clicked.connect(self.toggle_float_inferior)
+        bh_layout.addWidget(self.btn_float_bottom)
+
         btn_close_bottom = QToolButton()
         btn_close_bottom.setIcon(qta.icon('fa5s.times', color='#ff5c5c'))
         btn_close_bottom.setIconSize(QSize(16, 16))
@@ -303,10 +374,87 @@ class MainWindow(QMainWindow):
         self.v_splitter.setStretchFactor(1, 1)
         self.setCentralWidget(self.v_splitter)
 
+    # ==========================================
+    # LÓGICA DE VENTANAS FLOTANTES (POP-OUT)
+    # ==========================================
+    
+    def toggle_float_sidebar(self):
+        if not getattr(self, 'win_sidebar', None):
+            self.win_sidebar = FloatWindow("Explorador de Archivos", self.sidebar, self._on_sidebar_float_close, self)
+            self.win_sidebar.show()
+            self.btn_float_sidebar.setIcon(qta.icon('fa5s.compress-arrows-alt', color='#4ebfff'))
+            self.btn_float_sidebar.setToolTip("Integrar Explorador")
+        else:
+            self._on_sidebar_float_close()
+
+    def _on_sidebar_float_close(self):
+        # 1. PRIMERO rescatamos el widget de regreso al MainWindow
+        self.h_splitter.insertWidget(0, self.sidebar)
+        
+        # 2. AHORA SÍ cerramos la ventana flotante de forma segura
+        if getattr(self, 'win_sidebar', None):
+            self.win_sidebar.is_manual_close = True
+            self.win_sidebar.close()
+            self.win_sidebar = None
+            
+        self.btn_float_sidebar.setIcon(qta.icon('fa5s.external-link-alt', color='#cccccc'))
+        self.btn_float_sidebar.setToolTip("Separar Explorador")
+
+    def toggle_float_derecho(self):
+        if not getattr(self, 'win_derecho', None):
+            self.win_derecho = FloatWindow("Panel de Análisis", self.panel_derecho, self._on_derecho_float_close, self)
+            self.win_derecho.show()
+            self.btn_float_right.setIcon(qta.icon('fa5s.compress-arrows-alt', color='#4ebfff'))
+            self.btn_float_right.setToolTip("Integrar panel")
+        else:
+            self._on_derecho_float_close()
+
+    def _on_derecho_float_close(self):
+        # 1. PRIMERO rescatamos el widget de regreso al MainWindow
+        self.h_splitter.insertWidget(2, self.panel_derecho)
+        
+        # 2. AHORA SÍ cerramos la ventana flotante
+        if getattr(self, 'win_derecho', None):
+            self.win_derecho.is_manual_close = True
+            self.win_derecho.close()
+            self.win_derecho = None
+            
+        self.btn_float_right.setIcon(qta.icon('fa5s.external-link-alt', color='#cccccc'))
+        self.btn_float_right.setToolTip("Separar panel")
+
+    def toggle_float_inferior(self):
+        if not getattr(self, 'win_inferior', None):
+            self.win_inferior = FloatWindow("Consola y Resultados", self.panel_inferior, self._on_inferior_float_close, self)
+            self.win_inferior.show()
+            self.btn_float_bottom.setIcon(qta.icon('fa5s.compress-arrows-alt', color='#4ebfff'))
+            self.btn_float_bottom.setToolTip("Integrar consola")
+        else:
+            self._on_inferior_float_close()
+
+    def _on_inferior_float_close(self):
+        # 1. PRIMERO rescatamos el widget de regreso al MainWindow
+        self.v_splitter.insertWidget(1, self.panel_inferior)
+        
+        # 2. AHORA SÍ cerramos la ventana flotante
+        if getattr(self, 'win_inferior', None):
+            self.win_inferior.is_manual_close = True
+            self.win_inferior.close()
+            self.win_inferior = None
+            
+        self.btn_float_bottom.setIcon(qta.icon('fa5s.external-link-alt', color='#cccccc'))
+        self.btn_float_bottom.setToolTip("Separar consola")
+
+
+    # ==========================================
+    # MANEJO GENERAL DE UI Y ESTADO
+    # ==========================================
+
     def actualizar_estado_ui(self):
         hay_archivo = self.editor_actual() is not None
 
         if not hay_archivo:
+            if getattr(self, 'win_derecho', None): self._on_derecho_float_close()
+            if getattr(self, 'win_inferior', None): self._on_inferior_float_close()
             self.panel_derecho.setVisible(False)
             self.panel_inferior.setVisible(False)
 
@@ -327,6 +475,11 @@ class MainWindow(QMainWindow):
             self.action_run.setEnabled(hay_archivo)
 
     def restaurar_panel_derecho(self):
+        if getattr(self, 'win_derecho', None):
+            self.win_derecho.raise_()
+            self.win_derecho.activateWindow()
+            return
+            
         self.panel_derecho.setVisible(True)
         sizes = self.h_splitter.sizes()
         if len(sizes) >= 3 and sizes[2] == 0:
@@ -337,6 +490,11 @@ class MainWindow(QMainWindow):
             self.h_splitter.setSizes([int(total * 0.7), int(total * 0.3)])
 
     def restaurar_panel_inferior(self):
+        if getattr(self, 'win_inferior', None):
+            self.win_inferior.raise_()
+            self.win_inferior.activateWindow()
+            return
+            
         self.panel_inferior.setVisible(True)
         sizes = self.v_splitter.sizes()
         if sizes[1] == 0:  
@@ -344,12 +502,18 @@ class MainWindow(QMainWindow):
             self.v_splitter.setSizes([int(total * 0.75), int(total * 0.25)])
 
     def close_panel_derecho(self):
+        if getattr(self, 'win_derecho', None):
+            self._on_derecho_float_close()
+            
         self.panel_derecho.setVisible(False)
         sizes = self.h_splitter.sizes()
         total = sum(sizes) or self.width()
         self.h_splitter.setSizes([int(total * 0.15), int(total * 0.85), 0])
 
     def close_panel_inferior(self):
+        if getattr(self, 'win_inferior', None):
+            self._on_inferior_float_close()
+            
         self.panel_inferior.setVisible(False)
         sizes = self.v_splitter.sizes()
         total = sum(sizes) or self.height()
@@ -415,9 +579,6 @@ class MainWindow(QMainWindow):
         if path:
             self.abrir_archivo_desde_ruta(path)
 
-    # ==============================================================
-    # LÓGICA DE EXPLORADOR SIMULADO (MANUAL)
-    # ==============================================================
     def abrir_carpeta(self):
         carpeta = QFileDialog.getExistingDirectory(self, "Abrir Carpeta de Proyecto")
         if carpeta:
@@ -426,19 +587,14 @@ class MainWindow(QMainWindow):
     def cargar_proyecto_en_arbol(self, carpeta):
         self.ruta_proyecto = os.path.normpath(carpeta)
         
-        # Limpiamos el árbol visual
         self.file_explorer.clear()
         
-        # CREAR CARPETA PADRE SIMULADA
         nombre_carpeta = os.path.basename(self.ruta_proyecto)
         root_item = QTreeWidgetItem(self.file_explorer, [nombre_carpeta])
         root_item.setIcon(0, qta.icon('fa5s.folder-open', color='#dcb67a')) 
-        root_item.setData(0, Qt.UserRole, self.ruta_proyecto) # Guardamos la ruta real oculta
+        root_item.setData(0, Qt.UserRole, self.ruta_proyecto)
 
-        # Poblar recursivamente
         self._poblar_arbol(self.ruta_proyecto, root_item)
-        
-        # Expandir la carpeta principal
         root_item.setExpanded(True)
 
         os.chdir(self.ruta_proyecto)
@@ -448,14 +604,12 @@ class MainWindow(QMainWindow):
         self.status_bar.showMessage(f"Carpeta de proyecto abierta: {self.ruta_proyecto}", 5000)
 
     def _poblar_arbol(self, ruta_directorio, parent_item):
-        """Lee el disco duro y construye los items visuales uno por uno"""
         try:
             entradas = os.listdir(ruta_directorio)
             carpetas = []
             archivos = []
 
             for e in entradas:
-                # Ignorar carpetas de caché de python o git para mantener el explorador limpio
                 if e.startswith('__pycache__') or e.startswith('.git'):
                     continue
                     
@@ -465,24 +619,20 @@ class MainWindow(QMainWindow):
                 else:
                     archivos.append((e, ruta_completa))
 
-            # Ordenar alfabéticamente
             carpetas.sort(key=lambda x: x[0].lower())
             archivos.sort(key=lambda x: x[0].lower())
 
-            # Crear items para carpetas
             for nombre, ruta in carpetas:
                 item = QTreeWidgetItem(parent_item, [nombre])
                 item.setIcon(0, qta.icon('fa5s.folder', color='#dcb67a'))
                 item.setData(0, Qt.UserRole, ruta)
-                self._poblar_arbol(ruta, item) # Recursividad
+                self._poblar_arbol(ruta, item)
 
-            # Crear items para archivos con íconos personalizados
             for nombre, ruta in archivos:
                 item = QTreeWidgetItem(parent_item, [nombre])
                 
-                # Asignar icono visual según el tipo de archivo
                 if nombre.endswith('.py'):
-                    icon = qta.icon('fab.python', color='#ffde57') # Amarillo Python
+                    icon = qta.icon('fab.python', color='#ffde57')
                 elif nombre.endswith('.txt'):
                     icon = qta.icon('fa5s.file-alt', color='#cccccc')
                 else:
@@ -495,7 +645,6 @@ class MainWindow(QMainWindow):
             print(f"Error poblando árbol: {e}")
 
     def _on_explorer_item_clicked(self, item, column):
-        # Obtenemos la ruta real que guardamos en la data del item
         ruta = item.data(0, Qt.UserRole)
         if ruta and os.path.isfile(ruta):
             self.abrir_archivo_desde_ruta(ruta)
@@ -504,7 +653,6 @@ class MainWindow(QMainWindow):
         if not self.ruta_proyecto: return
 
         item = self.file_explorer.itemAt(pos)
-        # Si hace clic en un item toma su ruta, si hace clic en lo negro toma la raíz
         ruta_origen = item.data(0, Qt.UserRole) if item else self.ruta_proyecto
 
         menu = QMenu(self)
@@ -521,7 +669,6 @@ class MainWindow(QMainWindow):
         menu.addAction(accion_nuevo_archivo)
         menu.addAction(accion_nueva_carpeta)
         
-        # Proteger la carpeta raíz simulada para que no la borre por accidente desde aquí
         if item and ruta_origen != self.ruta_proyecto:
             menu.addSeparator()
             menu.addAction(accion_eliminar)
@@ -529,7 +676,6 @@ class MainWindow(QMainWindow):
         menu.exec(self.file_explorer.viewport().mapToGlobal(pos))
 
     def crear_elemento_explorador(self, ruta_origen, es_carpeta):
-        # Si la ruta origen es un archivo, creamos al lado. Si es carpeta, adentro.
         ruta_base = ruta_origen if os.path.isdir(ruta_origen) else os.path.dirname(ruta_origen)
         
         tipo = "Carpeta" if es_carpeta else "Archivo"
@@ -545,7 +691,6 @@ class MainWindow(QMainWindow):
                         pass 
                     self.abrir_archivo_desde_ruta(ruta_completa)
                     
-                # Recargar todo el árbol simulado para reflejar el cambio visualmente
                 self.cargar_proyecto_en_arbol(self.ruta_proyecto)
             except Exception as e:
                 QMessageBox.critical(self, "Error", f"No se pudo crear: {str(e)}")
@@ -571,7 +716,6 @@ class MainWindow(QMainWindow):
                     os.remove(ruta_origen)
                     self.cerrar_pestana_por_ruta(ruta_origen) 
                     
-                # Recargar el árbol
                 self.cargar_proyecto_en_arbol(self.ruta_proyecto)
             except Exception as e:
                 QMessageBox.critical(self, "Error", f"No se pudo eliminar: {str(e)}")
@@ -583,10 +727,6 @@ class MainWindow(QMainWindow):
             if hasattr(ed, 'file_path') and ed.file_path and os.path.normpath(ed.file_path) == ruta_norm:
                 self.cerrar_pestana(i)
                 break
-
-    # ==============================================================
-    # MÉTODOS DE ARCHIVOS GENERALES Y COMPILADOR
-    # ==============================================================
 
     def guardar_archivo(self):
         ed = self.editor_actual()
@@ -768,7 +908,6 @@ class MainWindow(QMainWindow):
 
             self.recargar_pestanas_abiertas([ruta_tokens, ruta_errores])
             
-            # Refrescar visualmente el explorador si generó archivos nuevos
             if self.ruta_proyecto:
                 self.cargar_proyecto_en_arbol(self.ruta_proyecto)
 

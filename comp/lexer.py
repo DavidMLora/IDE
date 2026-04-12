@@ -27,7 +27,7 @@ REGLAS = [
     ('ID',               r'\b[a-zA-Z][a-zA-Z0-9]*\b'), # Identificadores
     ('NUEVA_LINEA',      r'\n'),                    # Saltos de línea
     ('ESPACIO',          r'[ \t]+'),                # Espacios y tabulaciones
-    ('MISMATCH',         r'.+'),                    # CORRECCIÓN: Agrupa caracteres no válidos (ERROR)
+    ('MISMATCH',         r'.'),                    # CORRECCIÓN: Agrupa caracteres no válidos (ERROR)
 ]
 
 # Compilar todas las reglas en una sola expresión regular
