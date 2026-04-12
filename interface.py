@@ -2,11 +2,13 @@
 import os
 import sys
 import subprocess
+import shutil
 from PySide6.QtWidgets import (QMainWindow, QSplitter, QTabWidget, QTextEdit, 
                              QStatusBar, QWidget, QHBoxLayout, QVBoxLayout, 
                              QPushButton, QTabBar, QStackedWidget, QToolButton,
                              QFileDialog, QLabel, QTableWidget, QTableWidgetItem, 
-                             QHeaderView, QTreeView,QFileSystemModel)
+                             QHeaderView, QTreeWidget, QTreeWidgetItem, QMessageBox,
+                             QMenu, QInputDialog)
 from PySide6.QtGui import QAction
 from PySide6.QtCore import Qt, QSize
 import qtawesome as qta
@@ -128,25 +130,25 @@ class MainWindow(QMainWindow):
         sidebar_layout.setContentsMargins(6, 6, 6, 6)
         sidebar_layout.setSpacing(6)
 
-        sidebar_title = QLabel("EXPLORADOR")
-        sidebar_title.setObjectName('sidebar_title')
-        sidebar_layout.addWidget(sidebar_title)
+        self.sidebar_title = QLabel("EXPLORADOR")
+        self.sidebar_title.setObjectName('sidebar_title')
+        sidebar_layout.addWidget(self.sidebar_title)
 
-        # MODELO DE SISTEMA DE ARCHIVOS (ESTILO VS CODE)
-        self.file_model = QFileSystemModel()
-        self.file_model.setRootPath("") 
+        # ========================================================
+        # NUEVO ÁRBOL SIMULADO MANUALMENTE (ADIÓS MODELOS COMPLEJOS)
+        # ========================================================
+        self.ruta_proyecto = None
         
-        self.file_explorer = QTreeView()
+        self.file_explorer = QTreeWidget()
         self.file_explorer.setObjectName('file_explorer')
-        self.file_explorer.setModel(self.file_model)
-        self.file_explorer.setRootIndex(self.file_model.index("")) # Oculto hasta abrir carpeta
         self.file_explorer.setHeaderHidden(True)
-        
-        # Ocultar columnas de tamaño, tipo y fecha
-        for i in range(1, 4):
-            self.file_explorer.hideColumn(i)
+        self.file_explorer.setAnimated(True)
+        self.file_explorer.setIndentation(20)
             
-        self.file_explorer.clicked.connect(self._on_explorer_item_clicked)
+        self.file_explorer.itemClicked.connect(self._on_explorer_item_clicked)
+        self.file_explorer.setContextMenuPolicy(Qt.CustomContextMenu)
+        self.file_explorer.customContextMenuRequested.connect(self.mostrar_menu_contextual_explorador)
+
         sidebar_layout.addWidget(self.file_explorer)
 
         self.editor_workspace = QWidget()
@@ -160,11 +162,6 @@ class MainWindow(QMainWindow):
         
         self.view_stack.addWidget(self.welcome_screen)
         self.view_stack.addWidget(self.editor_workspace)
-
-    def _on_explorer_item_clicked(self, index):
-        if not self.file_model.isDir(index):
-            ruta = self.file_model.filePath(index)
-            self.abrir_archivo_desde_ruta(ruta)
 
     def show_analysis_tab(self, index: int):
         self.restaurar_panel_derecho()
@@ -418,17 +415,178 @@ class MainWindow(QMainWindow):
         if path:
             self.abrir_archivo_desde_ruta(path)
 
+    # ==============================================================
+    # LÓGICA DE EXPLORADOR SIMULADO (MANUAL)
+    # ==============================================================
     def abrir_carpeta(self):
         carpeta = QFileDialog.getExistingDirectory(self, "Abrir Carpeta de Proyecto")
         if carpeta:
-            self.file_model.setRootPath(carpeta)
-            self.file_explorer.setRootIndex(self.file_model.index(carpeta))
-            os.chdir(carpeta)
+            self.cargar_proyecto_en_arbol(carpeta)
+
+    def cargar_proyecto_en_arbol(self, carpeta):
+        self.ruta_proyecto = os.path.normpath(carpeta)
+        
+        # Limpiamos el árbol visual
+        self.file_explorer.clear()
+        
+        # CREAR CARPETA PADRE SIMULADA
+        nombre_carpeta = os.path.basename(self.ruta_proyecto)
+        root_item = QTreeWidgetItem(self.file_explorer, [nombre_carpeta])
+        root_item.setIcon(0, qta.icon('fa5s.folder-open', color='#dcb67a')) 
+        root_item.setData(0, Qt.UserRole, self.ruta_proyecto) # Guardamos la ruta real oculta
+
+        # Poblar recursivamente
+        self._poblar_arbol(self.ruta_proyecto, root_item)
+        
+        # Expandir la carpeta principal
+        root_item.setExpanded(True)
+
+        os.chdir(self.ruta_proyecto)
+        if hasattr(self, 'terminal_widget'):
+            self.terminal_widget.cambiar_directorio(self.ruta_proyecto)
             
-            if hasattr(self, 'terminal_widget'):
-                self.terminal_widget.cambiar_directorio(carpeta)
+        self.status_bar.showMessage(f"Carpeta de proyecto abierta: {self.ruta_proyecto}", 5000)
+
+    def _poblar_arbol(self, ruta_directorio, parent_item):
+        """Lee el disco duro y construye los items visuales uno por uno"""
+        try:
+            entradas = os.listdir(ruta_directorio)
+            carpetas = []
+            archivos = []
+
+            for e in entradas:
+                # Ignorar carpetas de caché de python o git para mantener el explorador limpio
+                if e.startswith('__pycache__') or e.startswith('.git'):
+                    continue
+                    
+                ruta_completa = os.path.join(ruta_directorio, e)
+                if os.path.isdir(ruta_completa):
+                    carpetas.append((e, ruta_completa))
+                else:
+                    archivos.append((e, ruta_completa))
+
+            # Ordenar alfabéticamente
+            carpetas.sort(key=lambda x: x[0].lower())
+            archivos.sort(key=lambda x: x[0].lower())
+
+            # Crear items para carpetas
+            for nombre, ruta in carpetas:
+                item = QTreeWidgetItem(parent_item, [nombre])
+                item.setIcon(0, qta.icon('fa5s.folder', color='#dcb67a'))
+                item.setData(0, Qt.UserRole, ruta)
+                self._poblar_arbol(ruta, item) # Recursividad
+
+            # Crear items para archivos con íconos personalizados
+            for nombre, ruta in archivos:
+                item = QTreeWidgetItem(parent_item, [nombre])
                 
-            self.status_bar.showMessage(f"Carpeta de proyecto abierta: {carpeta}", 5000)
+                # Asignar icono visual según el tipo de archivo
+                if nombre.endswith('.py'):
+                    icon = qta.icon('fab.python', color='#ffde57') # Amarillo Python
+                elif nombre.endswith('.txt'):
+                    icon = qta.icon('fa5s.file-alt', color='#cccccc')
+                else:
+                    icon = qta.icon('fa5s.file', color='#cccccc')
+                    
+                item.setIcon(0, icon)
+                item.setData(0, Qt.UserRole, ruta)
+
+        except Exception as e:
+            print(f"Error poblando árbol: {e}")
+
+    def _on_explorer_item_clicked(self, item, column):
+        # Obtenemos la ruta real que guardamos en la data del item
+        ruta = item.data(0, Qt.UserRole)
+        if ruta and os.path.isfile(ruta):
+            self.abrir_archivo_desde_ruta(ruta)
+
+    def mostrar_menu_contextual_explorador(self, pos):
+        if not self.ruta_proyecto: return
+
+        item = self.file_explorer.itemAt(pos)
+        # Si hace clic en un item toma su ruta, si hace clic en lo negro toma la raíz
+        ruta_origen = item.data(0, Qt.UserRole) if item else self.ruta_proyecto
+
+        menu = QMenu(self)
+        menu.setStyleSheet("QMenu { background-color: #252526; color: #cccccc; border: 1px solid #454545; } QMenu::item:selected { background-color: #094771; }")
+
+        accion_nuevo_archivo = QAction(qta.icon('fa5s.file'), "Nuevo Archivo", self)
+        accion_nueva_carpeta = QAction(qta.icon('fa5s.folder'), "Nueva Carpeta", self)
+        accion_eliminar = QAction(qta.icon('fa5s.trash-alt', color='#ff5c5c'), "Eliminar", self)
+
+        accion_nuevo_archivo.triggered.connect(lambda: self.crear_elemento_explorador(ruta_origen, es_carpeta=False))
+        accion_nueva_carpeta.triggered.connect(lambda: self.crear_elemento_explorador(ruta_origen, es_carpeta=True))
+        accion_eliminar.triggered.connect(lambda: self.eliminar_elemento_explorador(ruta_origen))
+
+        menu.addAction(accion_nuevo_archivo)
+        menu.addAction(accion_nueva_carpeta)
+        
+        # Proteger la carpeta raíz simulada para que no la borre por accidente desde aquí
+        if item and ruta_origen != self.ruta_proyecto:
+            menu.addSeparator()
+            menu.addAction(accion_eliminar)
+
+        menu.exec(self.file_explorer.viewport().mapToGlobal(pos))
+
+    def crear_elemento_explorador(self, ruta_origen, es_carpeta):
+        # Si la ruta origen es un archivo, creamos al lado. Si es carpeta, adentro.
+        ruta_base = ruta_origen if os.path.isdir(ruta_origen) else os.path.dirname(ruta_origen)
+        
+        tipo = "Carpeta" if es_carpeta else "Archivo"
+        nombre, ok = QInputDialog.getText(self, f"Nuevo {tipo}", f"Nombre del {tipo.lower()}:")
+
+        if ok and nombre:
+            ruta_completa = os.path.join(ruta_base, nombre)
+            try:
+                if es_carpeta:
+                    os.makedirs(ruta_completa, exist_ok=True)
+                else:
+                    with open(ruta_completa, 'w', encoding='utf-8') as f:
+                        pass 
+                    self.abrir_archivo_desde_ruta(ruta_completa)
+                    
+                # Recargar todo el árbol simulado para reflejar el cambio visualmente
+                self.cargar_proyecto_en_arbol(self.ruta_proyecto)
+            except Exception as e:
+                QMessageBox.critical(self, "Error", f"No se pudo crear: {str(e)}")
+
+    def eliminar_elemento_explorador(self, ruta_origen):
+        if not ruta_origen or ruta_origen == self.ruta_proyecto: return
+        
+        es_carpeta = os.path.isdir(ruta_origen)
+        nombre = os.path.basename(ruta_origen)
+
+        respuesta = QMessageBox.question(
+            self, 
+            "Confirmar Eliminación", 
+            f"¿Estás seguro de que deseas eliminar permanentemente '{nombre}'?",
+            QMessageBox.Yes | QMessageBox.No
+        )
+
+        if respuesta == QMessageBox.Yes:
+            try:
+                if es_carpeta:
+                    shutil.rmtree(ruta_origen) 
+                else:
+                    os.remove(ruta_origen)
+                    self.cerrar_pestana_por_ruta(ruta_origen) 
+                    
+                # Recargar el árbol
+                self.cargar_proyecto_en_arbol(self.ruta_proyecto)
+            except Exception as e:
+                QMessageBox.critical(self, "Error", f"No se pudo eliminar: {str(e)}")
+
+    def cerrar_pestana_por_ruta(self, ruta):
+        ruta_norm = os.path.normpath(ruta)
+        for i in range(self.editor_stack.count()):
+            ed = self.editor_stack.widget(i)
+            if hasattr(ed, 'file_path') and ed.file_path and os.path.normpath(ed.file_path) == ruta_norm:
+                self.cerrar_pestana(i)
+                break
+
+    # ==============================================================
+    # MÉTODOS DE ARCHIVOS GENERALES Y COMPILADOR
+    # ==============================================================
 
     def guardar_archivo(self):
         ed = self.editor_actual()
@@ -498,28 +656,20 @@ class MainWindow(QMainWindow):
             self.status_bar.showMessage(f"Línea: {cursor.blockNumber()+1} | Columna: {cursor.columnNumber()} | Caracteres: {caracteres}")
 
     def recargar_pestanas_abiertas(self, rutas_a_recargar):
-        """
-        Busca si los archivos generados están abiertos en alguna pestaña del IDE
-        y actualiza su contenido leyendo el disco duro nuevamente.
-        """
-        # 1. Normalizamos las rutas objetivo (convierte todas las / y \ al mismo formato)
         rutas_normalizadas = [os.path.normcase(os.path.normpath(r)) for r in rutas_a_recargar]
 
         for i in range(self.editor_stack.count()):
             ed = self.editor_stack.widget(i)
             
-            # 2. Verificamos que el editor tenga un archivo asignado
             if hasattr(ed, 'file_path') and ed.file_path:
                 ruta_editor = os.path.normcase(os.path.normpath(ed.file_path))
                 
-                # 3. Comparamos las rutas normalizadas
                 if ruta_editor in rutas_normalizadas:
                     if os.path.exists(ed.file_path):
                         try:
                             with open(ed.file_path, 'r', encoding='utf-8') as f:
                                 nuevo_texto = f.read()
                             
-                            # Solo actualizamos el texto si realmente cambió
                             if ed.toPlainText() != nuevo_texto:
                                 cursor = ed.textCursor()
                                 posicion = cursor.position()
@@ -538,7 +688,6 @@ class MainWindow(QMainWindow):
         return ed.toPlainText()
 
     def ejecutar_lexico(self):
-        # UNIFICADO Y CORREGIDO
         ed = self.editor_actual()
         if not ed: return
 
@@ -546,12 +695,10 @@ class MainWindow(QMainWindow):
             self.guardar_como()
             if not ed.file_path: return
 
-        # Evita ejecutar si el código está completamente vacío
         if not ed.toPlainText().strip():
             self.status_bar.showMessage("El archivo está vacío. Escribe algo de código primero.", 3000)
             return
 
-        # 1. Guardar los cambios del editor en el archivo físico
         self.guardar_archivo()
         self.restaurar_panel_derecho()
         self.restaurar_panel_inferior()
@@ -560,32 +707,28 @@ class MainWindow(QMainWindow):
         DIRECTORIO_BASE = os.path.dirname(os.path.abspath(__file__))
         RUTA_COMPILADOR = os.path.join(DIRECTORIO_BASE, "comp", "lexer.py")
 
-        # 2. Reconstruir rutas de los archivos de salida
         directorio, archivo = os.path.split(ed.file_path)
         nombre_base, _ = os.path.splitext(archivo)
         ruta_tokens = os.path.join(directorio, f"{nombre_base}_tokens.txt")
         ruta_errores = os.path.join(directorio, f"{nombre_base}_errores.txt")
 
-        # 3. ELIMINAR LOS ARCHIVOS VIEJOS
         if os.path.exists(ruta_tokens):
             os.remove(ruta_tokens)
         if os.path.exists(ruta_errores):
             os.remove(ruta_errores)
 
         try:
-            # 4. Usar sys.executable asegura que se use el mismo Python
             proceso = subprocess.run(
                 [sys.executable, RUTA_COMPILADOR, ed.file_path],
                 capture_output=True,
                 text=True,
-                encoding='utf-8' # OBLIGATORIO UTF-8
+                encoding='utf-8',
+                errors='replace' 
             )
             
-            # Limpiar la tabla antes de llenarla
             tabla_tokens = self.tabs_analisis.widget(0)
             tabla_tokens.setRowCount(0) 
 
-            # Llenar la tabla solo si el archivo nuevo fue creado con éxito
             if os.path.exists(ruta_tokens):
                 with open(ruta_tokens, 'r', encoding='utf-8') as f_tok:
                     lineas = f_tok.readlines()
@@ -613,7 +756,6 @@ class MainWindow(QMainWindow):
 
             self.tabs_analisis.setCurrentIndex(0)
 
-            # Revisar el archivo de errores
             if os.path.exists(ruta_errores):
                 with open(ruta_errores, 'r', encoding='utf-8') as f_err:
                     contenido_errores = f_err.read()
@@ -624,8 +766,11 @@ class MainWindow(QMainWindow):
             else:
                 self.consola_inferior.widget(0).setPlainText(f">> No se generó el archivo de errores.\nSalida de la consola:\n{proceso.stderr}")
 
-            # Recargar archivos en el IDE si están abiertos
             self.recargar_pestanas_abiertas([ruta_tokens, ruta_errores])
+            
+            # Refrescar visualmente el explorador si generó archivos nuevos
+            if self.ruta_proyecto:
+                self.cargar_proyecto_en_arbol(self.ruta_proyecto)
 
         except Exception as e:
             self.consola_inferior.widget(0).setPlainText(f"Error crítico al intentar ejecutar el compilador:\n{str(e)}")

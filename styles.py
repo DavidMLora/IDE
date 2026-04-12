@@ -130,27 +130,39 @@ GLOBAL_STYLES = """
 
     /* ======== SIDEBAR / EXPLORER ======== */
     QWidget#sidebar {
-        background-color: #171717;
+        background-color: #181818; /* Ligeramente más oscuro, estilo VS Code */
         border-right: 1px solid #2b2b2b;
     }
     QLabel#sidebar_title {
-        color: #9fbfe6;
-        font-weight: 700;
-        padding: 8px 10px;
-        font-size: 12px;
+        color: #cccccc;
+        font-weight: bold;
+        padding: 10px 10px 5px 10px;
+        font-size: 11px;
+        letter-spacing: 1px;
     }
-    QListWidget#file_explorer {
+    
+    /* NUEVOS ESTILOS PARA EL ÁRBOL DE DIRECTORIOS */
+    QTreeView#file_explorer {
         background: transparent;
-        color: #d0d0d0;
+        color: #cccccc;
         border: none;
-        padding: 6px;
+        outline: none; /* Quita el cuadro punteado al hacer clic */
     }
-    QListWidget#file_explorer::item {
-        padding: 6px 10px;
+    QTreeView#file_explorer::item {
+        padding: 4px;
+        border-radius: 4px;
+        margin: 1px 4px; /* Separación de los bordes */
     }
-    QListWidget#file_explorer::item:selected {
-        background-color: #094771;
-        color: white;
+    QTreeView#file_explorer::item:hover {
+        background-color: #2a2d2e; /* Color al pasar el ratón */
+    }
+    QTreeView#file_explorer::item:selected {
+        background-color: #04395e; /* Azul característico de selección en VS Code */
+        color: #ffffff;
+    }
+    /* El fondo de las flechitas de despliegue */
+    QTreeView#file_explorer::branch:selected {
+        background-color: #04395e;
     }
 
     /* ======== TOP HEADER / TOOLBAR ======== */
