@@ -3,6 +3,7 @@ import os
 import sys
 import subprocess
 import shutil
+import json
 from PySide6.QtWidgets import (QMainWindow, QSplitter, QTabWidget, QTextEdit, 
                              QStatusBar, QWidget, QHBoxLayout, QVBoxLayout, 
                              QPushButton, QTabBar, QStackedWidget, QToolButton,
@@ -260,6 +261,15 @@ class MainWindow(QMainWindow):
                     QHeaderView::section { background-color: #2d2d2d; color: #cccccc; border: 1px solid #333333; padding: 4px; font-weight: bold; }
                 """)
                 self.tabs_analisis.addTab(tabla, nombre)
+            elif nombre == "Sintáctico":
+                arbol = QTreeWidget()
+                arbol.setHeaderHidden(True)
+                arbol.setStyleSheet("""
+                    QTreeWidget { background-color: #1e1e1e; color: #cccccc; border: none; }
+                    QTreeView::item:hover { background-color: #2a2d2e; }
+                    QTreeView::item:selected { background-color: #04395e; color: #ffffff; }
+                """)
+                self.tabs_analisis.addTab(arbol, nombre)
             else:
                 txt_edit = QTextEdit()
                 txt_edit.setReadOnly(True)
@@ -632,7 +642,7 @@ class MainWindow(QMainWindow):
                 item = QTreeWidgetItem(parent_item, [nombre])
                 
                 if nombre.endswith('.py'):
-                    icon = qta.icon('fab.python', color='#ffde57')
+                    icon = qta.icon('fa5s.file-code', color='#ffde57')
                 elif nombre.endswith('.txt'):
                     icon = qta.icon('fa5s.file-alt', color='#cccccc')
                 else:
@@ -849,8 +859,12 @@ class MainWindow(QMainWindow):
 
         directorio, archivo = os.path.split(ed.file_path)
         nombre_base, _ = os.path.splitext(archivo)
-        ruta_tokens = os.path.join(directorio, f"{nombre_base}_tokens.txt")
-        ruta_errores = os.path.join(directorio, f"{nombre_base}_errores.txt")
+        
+        out_dir = os.path.join(directorio, ".compilados")
+        os.makedirs(out_dir, exist_ok=True)
+        
+        ruta_tokens = os.path.join(out_dir, f"{nombre_base}_tokens.txt")
+        ruta_errores = os.path.join(out_dir, f"{nombre_base}_errores.txt")
 
         if os.path.exists(ruta_tokens):
             os.remove(ruta_tokens)
@@ -901,10 +915,10 @@ class MainWindow(QMainWindow):
                     contenido_errores = f_err.read()
                 
                 self.consola_inferior.widget(0).setPlainText(contenido_errores)
-                if proceso.returncode != 0:
-                    self.consola_inferior.setCurrentIndex(0) 
+                self.consola_inferior.setCurrentIndex(0) 
             else:
                 self.consola_inferior.widget(0).setPlainText(f">> No se generó el archivo de errores.\nSalida de la consola:\n{proceso.stderr}")
+                self.consola_inferior.setCurrentIndex(0)
 
             self.recargar_pestanas_abiertas([ruta_tokens, ruta_errores])
             
@@ -915,13 +929,99 @@ class MainWindow(QMainWindow):
             self.consola_inferior.widget(0).setPlainText(f"Error crítico al intentar ejecutar el compilador:\n{str(e)}")
             self.consola_inferior.setCurrentIndex(0)
 
+    def _poblar_arbol_sintactico(self, nodo_datos, parent_item):
+        if not isinstance(nodo_datos, dict):
+            return
+            
+        tipo = nodo_datos.get("tipo", "")
+        valor = nodo_datos.get("valor", "")
+        
+        texto_item = tipo
+        if valor:
+            texto_item += f": {valor}"
+            
+        item = QTreeWidgetItem(parent_item, [texto_item])
+        
+        if tipo == "programa":
+            item.setIcon(0, qta.icon('fa5s.laptop-code', color='#4ebfff'))
+        elif tipo in ["keyword", "tipo_dato"]:
+            item.setIcon(0, qta.icon('fa5s.key', color='#c586c0'))
+        elif tipo == "id":
+            item.setIcon(0, qta.icon('fa5s.tag', color='#9cdcfe'))
+        elif tipo in ["numero", "booleano", "cadena", "literal"]:
+            item.setIcon(0, qta.icon('fa5s.cube', color='#b5cea8'))
+        elif tipo in ["simbolo", "operador", "op_relacional", "suma_op", "mult_op", "pot_op", "op_logico"]:
+            item.setIcon(0, qta.icon('fa5s.cog', color='#d4d4d4'))
+        else:
+            item.setIcon(0, qta.icon('fa5s.folder', color='#dcb67a'))
+            
+        hijos = nodo_datos.get("hijos", [])
+        for hijo in hijos:
+            self._poblar_arbol_sintactico(hijo, item)
+            
+        item.setExpanded(True)
+
     def ejecutar_sintactico(self):
-        if self.obtener_codigo() is None: return
-        self.restaurar_panel_derecho() 
+        ed = self.editor_actual()
+        if not ed or not hasattr(ed, 'file_path') or not ed.file_path: return
+        
+        self.guardar_archivo()
+        self.restaurar_panel_derecho()
+        self.restaurar_panel_inferior()
         self.status_bar.showMessage("Ejecutando Análisis Sintáctico...", 3000)
-        simulacion = ">> INICIANDO ANÁLISIS SINTÁCTICO...\n\n PROGRAMA\n └── FUNCION_PRINCIPAL\n     ├── TIPO: int\n     ├── ID: main\n     └── BLOQUE\n         └── RETORNO: 0\n\n>> Análisis sintáctico finalizado."
-        self.tabs_analisis.widget(1).setPlainText(simulacion)
-        self.tabs_analisis.setCurrentIndex(1)
+
+        directorio, archivo = os.path.split(ed.file_path)
+        nombre_base, _ = os.path.splitext(archivo)
+        
+        out_dir = os.path.join(directorio, ".compilados")
+        os.makedirs(out_dir, exist_ok=True)
+        
+        ruta_tokens = os.path.join(out_dir, f"{nombre_base}_tokens.txt")
+        ruta_ast = os.path.join(out_dir, f"{nombre_base}_ast.json")
+        ruta_errores = os.path.join(out_dir, f"{nombre_base}_errores_sintacticos.txt")
+        
+        if not os.path.exists(ruta_tokens):
+            self.consola_inferior.widget(1).setPlainText("Error: No se encontro archivo de tokens. Ejecute analisis lexico primero.")
+            self.consola_inferior.setCurrentIndex(1)
+            return
+
+        DIRECTORIO_BASE = os.path.dirname(os.path.abspath(__file__))
+        RUTA_PARSER = os.path.join(DIRECTORIO_BASE, "comp", "parser.py")
+        
+        try:
+            proceso = subprocess.run(
+                [sys.executable, RUTA_PARSER, ruta_tokens],
+                capture_output=True,
+                text=True,
+                encoding='utf-8',
+                errors='replace'
+            )
+            
+            arbol_sintactico = self.tabs_analisis.widget(1)
+            arbol_sintactico.clear()
+            
+            if os.path.exists(ruta_ast):
+                with open(ruta_ast, 'r', encoding='utf-8') as f:
+                    ast_data = json.load(f)
+                self._poblar_arbol_sintactico(ast_data, arbol_sintactico)
+            else:
+                QTreeWidgetItem(arbol_sintactico, ["Error: No se genero el AST."])
+                
+            self.tabs_analisis.setCurrentIndex(1)
+            
+            if os.path.exists(ruta_errores):
+                with open(ruta_errores, 'r', encoding='utf-8') as f_err:
+                    contenido_errores = f_err.read()
+                
+                self.consola_inferior.widget(1).setPlainText(contenido_errores)
+                self.consola_inferior.setCurrentIndex(1) 
+            else:
+                self.consola_inferior.widget(1).setPlainText(f">> No se generó el archivo de errores sintácticos.\nSalida:\n{proceso.stderr}")
+                self.consola_inferior.setCurrentIndex(1)
+                
+        except Exception as e:
+            self.consola_inferior.widget(1).setPlainText(f"Error crítico en analizador sintáctico:\n{str(e)}")
+            self.consola_inferior.setCurrentIndex(1)
 
     def ejecutar_semantico(self):
         if self.obtener_codigo() is None: return

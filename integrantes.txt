@@ -1,0 +1,12 @@
+REPORTE DE INTEGRANTES - FASE 2
+
+Por favor rellena tus datos aquí:
+
+Nombre: [Nombre del Integrante 1]
+Matricula: [Matricula 1]
+
+Nombre: [Nombre del Integrante 2]
+Matricula: [Matricula 2]
+
+Nombre: [Nombre del Integrante 3]
+Matricula: [Matricula 3]

@@ -1,0 +1,10 @@
+main {
+    int x;
+    float y, z;
+    x = 10;
+    y = 3.14;
+    z = x + y * 2.0;
+    if x > 5 {
+        x = x - 1;
+    }
+}

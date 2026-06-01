@@ -1,0 +1,32 @@
+REPORTE DE TOKENS
+--------------------------------------------------
+Token: RESERVADA       | Lexema: main            | Fila:   1 | Col:   1
+Token: SIMBOLO         | Lexema: {               | Fila:   1 | Col:   6
+Token: RESERVADA       | Lexema: int             | Fila:   2 | Col:   5
+Token: ID              | Lexema: x               | Fila:   2 | Col:   9
+Token: RESERVADA       | Lexema: float           | Fila:   3 | Col:   5
+Token: ID              | Lexema: y               | Fila:   3 | Col:  11
+Token: SIMBOLO         | Lexema: ,               | Fila:   3 | Col:  12
+Token: ID              | Lexema: z               | Fila:   3 | Col:  14
+Token: SIMBOLO         | Lexema: ;               | Fila:   3 | Col:  15
+Token: RESERVADA       | Lexema: if              | Fila:   5 | Col:   5
+Token: ID              | Lexema: x               | Fila:   5 | Col:   8
+Token: OP_RELACIONAL   | Lexema: >               | Fila:   5 | Col:  10
+Token: ENTERO          | Lexema: 5               | Fila:   5 | Col:  12
+Token: ID              | Lexema: x               | Fila:   6 | Col:   9
+Token: ASIGNACION      | Lexema: =               | Fila:   6 | Col:  11
+Token: ID              | Lexema: x               | Fila:   6 | Col:  13
+Token: OP_ARITMETICO   | Lexema: -               | Fila:   6 | Col:  15
+Token: ENTERO          | Lexema: 1               | Fila:   6 | Col:  17
+Token: SIMBOLO         | Lexema: ;               | Fila:   6 | Col:  18
+Token: RESERVADA       | Lexema: while           | Fila:   9 | Col:   5
+Token: ID              | Lexema: x               | Fila:   9 | Col:  11
+Token: OP_RELACIONAL   | Lexema: <               | Fila:   9 | Col:  13
+Token: ENTERO          | Lexema: 10              | Fila:   9 | Col:  15
+Token: SIMBOLO         | Lexema: {               | Fila:   9 | Col:  18
+Token: ID              | Lexema: x               | Fila:  10 | Col:   9
+Token: ASIGNACION      | Lexema: =               | Fila:  10 | Col:  11
+Token: ID              | Lexema: x               | Fila:  10 | Col:  13
+Token: OP_ARITMETICO   | Lexema: +               | Fila:  10 | Col:  15
+Token: SIMBOLO         | Lexema: }               | Fila:  11 | Col:   5
+Token: SIMBOLO         | Lexema: }               | Fila:  12 | Col:   1

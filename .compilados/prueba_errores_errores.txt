@@ -1,0 +1,3 @@
+REPORTE DE ERRORES LÉXICOS
+--------------------------------------------------
+0 errores encontrados. Análisis léxico limpio.

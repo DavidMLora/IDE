@@ -78,8 +78,11 @@ def generar_archivos(ruta_original, tokens, errores):
     directorio, archivo = os.path.split(ruta_original)
     nombre_base, _ = os.path.splitext(archivo)
     
-    ruta_tokens = os.path.join(directorio, f"{nombre_base}_tokens.txt")
-    ruta_errores = os.path.join(directorio, f"{nombre_base}_errores.txt")
+    out_dir = os.path.join(directorio, ".compilados")
+    os.makedirs(out_dir, exist_ok=True)
+    
+    ruta_tokens = os.path.join(out_dir, f"{nombre_base}_tokens.txt")
+    ruta_errores = os.path.join(out_dir, f"{nombre_base}_errores.txt")
 
     # 1. El compilador destruye proactivamente la caché/archivos viejos
     try:

@@ -1,0 +1,12 @@
+main {
+    int contador;
+    contador = 0;
+    while contador < 10 {
+        cout << "Contador: " << contador;
+        contador = contador + 1;
+    }
+    
+    do {
+        cin >> contador;
+    } while contador != 0;
+}
