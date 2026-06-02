@@ -1,0 +1,3 @@
+REPORTE DE ERRORES SINTACTICOS
+--------------------------------------------------
+0 errores encontrados. Analisis sintactico limpio.

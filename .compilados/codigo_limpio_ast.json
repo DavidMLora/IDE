@@ -1,0 +1,2534 @@
+{
+    "tipo": "programa",
+    "hijos": [
+        {
+            "tipo": "keyword",
+            "valor": "main"
+        },
+        {
+            "tipo": "simbolo",
+            "valor": "{"
+        },
+        {
+            "tipo": "lista_declaracion",
+            "hijos": [
+                {
+                    "tipo": "declaracion_variable",
+                    "hijos": [
+                        {
+                            "tipo": "tipo_dato",
+                            "valor": "int"
+                        },
+                        {
+                            "tipo": "identificadores",
+                            "hijos": [
+                                {
+                                    "tipo": "id",
+                                    "valor": "x"
+                                },
+                                {
+                                    "tipo": "simbolo",
+                                    "valor": ","
+                                },
+                                {
+                                    "tipo": "id",
+                                    "valor": "y"
+                                },
+                                {
+                                    "tipo": "simbolo",
+                                    "valor": ","
+                                },
+                                {
+                                    "tipo": "id",
+                                    "valor": "z"
+                                }
+                            ]
+                        },
+                        {
+                            "tipo": "simbolo",
+                            "valor": ";"
+                        }
+                    ]
+                },
+                {
+                    "tipo": "declaracion_variable",
+                    "hijos": [
+                        {
+                            "tipo": "tipo_dato",
+                            "valor": "float"
+                        },
+                        {
+                            "tipo": "identificadores",
+                            "hijos": [
+                                {
+                                    "tipo": "id",
+                                    "valor": "a"
+                                },
+                                {
+                                    "tipo": "simbolo",
+                                    "valor": ","
+                                },
+                                {
+                                    "tipo": "id",
+                                    "valor": "b"
+                                },
+                                {
+                                    "tipo": "simbolo",
+                                    "valor": ","
+                                },
+                                {
+                                    "tipo": "id",
+                                    "valor": "c"
+                                }
+                            ]
+                        },
+                        {
+                            "tipo": "simbolo",
+                            "valor": ";"
+                        }
+                    ]
+                },
+                {
+                    "tipo": "declaracion_variable",
+                    "hijos": [
+                        {
+                            "tipo": "tipo_dato",
+                            "valor": "int"
+                        },
+                        {
+                            "tipo": "identificadores",
+                            "hijos": [
+                                {
+                                    "tipo": "id",
+                                    "valor": "suma"
+                                },
+                                {
+                                    "tipo": "simbolo",
+                                    "valor": ","
+                                },
+                                {
+                                    "tipo": "id",
+                                    "valor": "mas"
+                                }
+                            ]
+                        },
+                        {
+                            "tipo": "simbolo",
+                            "valor": ";"
+                        }
+                    ]
+                },
+                {
+                    "tipo": "lista_sentencias",
+                    "hijos": [
+                        {
+                            "tipo": "asignacion",
+                            "hijos": [
+                                {
+                                    "tipo": "id",
+                                    "valor": "suma"
+                                },
+                                {
+                                    "tipo": "operador",
+                                    "valor": "="
+                                },
+                                {
+                                    "tipo": "sent_expresion",
+                                    "hijos": [
+                                        {
+                                            "tipo": "expresion",
+                                            "hijos": [
+                                                {
+                                                    "tipo": "expresion_simple",
+                                                    "hijos": [
+                                                        {
+                                                            "tipo": "termino",
+                                                            "hijos": [
+                                                                {
+                                                                    "tipo": "factor",
+                                                                    "hijos": [
+                                                                        {
+                                                                            "tipo": "componente",
+                                                                            "hijos": [
+                                                                                {
+                                                                                    "tipo": "numero",
+                                                                                    "valor": "45"
+                                                                                }
+                                                                            ]
+                                                                        }
+                                                                    ]
+                                                                }
+                                                            ]
+                                                        }
+                                                    ]
+                                                }
+                                            ]
+                                        },
+                                        {
+                                            "tipo": "simbolo",
+                                            "valor": ";"
+                                        }
+                                    ]
+                                }
+                            ]
+                        },
+                        {
+                            "tipo": "asignacion",
+                            "hijos": [
+                                {
+                                    "tipo": "id",
+                                    "valor": "x"
+                                },
+                                {
+                                    "tipo": "operador",
+                                    "valor": "="
+                                },
+                                {
+                                    "tipo": "sent_expresion",
+                                    "hijos": [
+                                        {
+                                            "tipo": "expresion",
+                                            "hijos": [
+                                                {
+                                                    "tipo": "expresion_simple",
+                                                    "hijos": [
+                                                        {
+                                                            "tipo": "termino",
+                                                            "hijos": [
+                                                                {
+                                                                    "tipo": "factor",
+                                                                    "hijos": [
+                                                                        {
+                                                                            "tipo": "componente",
+                                                                            "hijos": [
+                                                                                {
+                                                                                    "tipo": "numero",
+                                                                                    "valor": "32"
+                                                                                }
+                                                                            ]
+                                                                        }
+                                                                    ]
+                                                                }
+                                                            ]
+                                                        }
+                                                    ]
+                                                }
+                                            ]
+                                        },
+                                        {
+                                            "tipo": "simbolo",
+                                            "valor": ";"
+                                        }
+                                    ]
+                                }
+                            ]
+                        },
+                        {
+                            "tipo": "asignacion",
+                            "hijos": [
+                                {
+                                    "tipo": "id",
+                                    "valor": "x"
+                                },
+                                {
+                                    "tipo": "operador",
+                                    "valor": "="
+                                },
+                                {
+                                    "tipo": "sent_expresion",
+                                    "hijos": [
+                                        {
+                                            "tipo": "expresion",
+                                            "hijos": [
+                                                {
+                                                    "tipo": "expresion_simple",
+                                                    "hijos": [
+                                                        {
+                                                            "tipo": "termino",
+                                                            "hijos": [
+                                                                {
+                                                                    "tipo": "factor",
+                                                                    "hijos": [
+                                                                        {
+                                                                            "tipo": "componente",
+                                                                            "hijos": [
+                                                                                {
+                                                                                    "tipo": "numero",
+                                                                                    "valor": "23"
+                                                                                }
+                                                                            ]
+                                                                        }
+                                                                    ]
+                                                                }
+                                                            ]
+                                                        }
+                                                    ]
+                                                }
+                                            ]
+                                        },
+                                        {
+                                            "tipo": "simbolo",
+                                            "valor": ";"
+                                        }
+                                    ]
+                                }
+                            ]
+                        },
+                        {
+                            "tipo": "asignacion",
+                            "hijos": [
+                                {
+                                    "tipo": "id",
+                                    "valor": "y"
+                                },
+                                {
+                                    "tipo": "operador",
+                                    "valor": "="
+                                },
+                                {
+                                    "tipo": "sent_expresion",
+                                    "hijos": [
+                                        {
+                                            "tipo": "expresion",
+                                            "hijos": [
+                                                {
+                                                    "tipo": "expresion_simple",
+                                                    "hijos": [
+                                                        {
+                                                            "tipo": "termino",
+                                                            "hijos": [
+                                                                {
+                                                                    "tipo": "factor",
+                                                                    "hijos": [
+                                                                        {
+                                                                            "tipo": "componente",
+                                                                            "hijos": [
+                                                                                {
+                                                                                    "tipo": "numero",
+                                                                                    "valor": "2"
+                                                                                }
+                                                                            ]
+                                                                        }
+                                                                    ]
+                                                                }
+                                                            ]
+                                                        },
+                                                        {
+                                                            "tipo": "suma_op",
+                                                            "valor": "+"
+                                                        },
+                                                        {
+                                                            "tipo": "termino",
+                                                            "hijos": [
+                                                                {
+                                                                    "tipo": "factor",
+                                                                    "hijos": [
+                                                                        {
+                                                                            "tipo": "componente",
+                                                                            "hijos": [
+                                                                                {
+                                                                                    "tipo": "numero",
+                                                                                    "valor": "3"
+                                                                                }
+                                                                            ]
+                                                                        }
+                                                                    ]
+                                                                }
+                                                            ]
+                                                        },
+                                                        {
+                                                            "tipo": "suma_op",
+                                                            "valor": "-"
+                                                        },
+                                                        {
+                                                            "tipo": "termino",
+                                                            "hijos": [
+                                                                {
+                                                                    "tipo": "factor",
+                                                                    "hijos": [
+                                                                        {
+                                                                            "tipo": "componente",
+                                                                            "hijos": [
+                                                                                {
+                                                                                    "tipo": "numero",
+                                                                                    "valor": "1"
+                                                                                }
+                                                                            ]
+                                                                        }
+                                                                    ]
+                                                                }
+                                                            ]
+                                                        }
+                                                    ]
+                                                }
+                                            ]
+                                        },
+                                        {
+                                            "tipo": "simbolo",
+                                            "valor": ";"
+                                        }
+                                    ]
+                                }
+                            ]
+                        },
+                        {
+                            "tipo": "asignacion",
+                            "hijos": [
+                                {
+                                    "tipo": "id",
+                                    "valor": "z"
+                                },
+                                {
+                                    "tipo": "operador",
+                                    "valor": "="
+                                },
+                                {
+                                    "tipo": "sent_expresion",
+                                    "hijos": [
+                                        {
+                                            "tipo": "expresion",
+                                            "hijos": [
+                                                {
+                                                    "tipo": "expresion_simple",
+                                                    "hijos": [
+                                                        {
+                                                            "tipo": "termino",
+                                                            "hijos": [
+                                                                {
+                                                                    "tipo": "factor",
+                                                                    "hijos": [
+                                                                        {
+                                                                            "tipo": "componente",
+                                                                            "hijos": [
+                                                                                {
+                                                                                    "tipo": "id",
+                                                                                    "valor": "y"
+                                                                                }
+                                                                            ]
+                                                                        }
+                                                                    ]
+                                                                }
+                                                            ]
+                                                        },
+                                                        {
+                                                            "tipo": "suma_op",
+                                                            "valor": "+"
+                                                        },
+                                                        {
+                                                            "tipo": "termino",
+                                                            "hijos": [
+                                                                {
+                                                                    "tipo": "factor",
+                                                                    "hijos": [
+                                                                        {
+                                                                            "tipo": "componente",
+                                                                            "hijos": [
+                                                                                {
+                                                                                    "tipo": "numero",
+                                                                                    "valor": "7"
+                                                                                }
+                                                                            ]
+                                                                        }
+                                                                    ]
+                                                                }
+                                                            ]
+                                                        }
+                                                    ]
+                                                }
+                                            ]
+                                        },
+                                        {
+                                            "tipo": "simbolo",
+                                            "valor": ";"
+                                        }
+                                    ]
+                                }
+                            ]
+                        },
+                        {
+                            "tipo": "asignacion",
+                            "hijos": [
+                                {
+                                    "tipo": "id",
+                                    "valor": "y"
+                                },
+                                {
+                                    "tipo": "operador",
+                                    "valor": "="
+                                },
+                                {
+                                    "tipo": "sent_expresion",
+                                    "hijos": [
+                                        {
+                                            "tipo": "expresion",
+                                            "hijos": [
+                                                {
+                                                    "tipo": "expresion_simple",
+                                                    "hijos": [
+                                                        {
+                                                            "tipo": "termino",
+                                                            "hijos": [
+                                                                {
+                                                                    "tipo": "factor",
+                                                                    "hijos": [
+                                                                        {
+                                                                            "tipo": "componente",
+                                                                            "hijos": [
+                                                                                {
+                                                                                    "tipo": "id",
+                                                                                    "valor": "y"
+                                                                                }
+                                                                            ]
+                                                                        }
+                                                                    ]
+                                                                }
+                                                            ]
+                                                        },
+                                                        {
+                                                            "tipo": "suma_op",
+                                                            "valor": "+"
+                                                        },
+                                                        {
+                                                            "tipo": "termino",
+                                                            "hijos": [
+                                                                {
+                                                                    "tipo": "factor",
+                                                                    "hijos": [
+                                                                        {
+                                                                            "tipo": "componente",
+                                                                            "hijos": [
+                                                                                {
+                                                                                    "tipo": "numero",
+                                                                                    "valor": "1"
+                                                                                }
+                                                                            ]
+                                                                        }
+                                                                    ]
+                                                                }
+                                                            ]
+                                                        }
+                                                    ]
+                                                }
+                                            ]
+                                        },
+                                        {
+                                            "tipo": "simbolo",
+                                            "valor": ";"
+                                        }
+                                    ]
+                                }
+                            ]
+                        },
+                        {
+                            "tipo": "asignacion",
+                            "hijos": [
+                                {
+                                    "tipo": "id",
+                                    "valor": "a"
+                                },
+                                {
+                                    "tipo": "operador",
+                                    "valor": "="
+                                },
+                                {
+                                    "tipo": "sent_expresion",
+                                    "hijos": [
+                                        {
+                                            "tipo": "expresion",
+                                            "hijos": [
+                                                {
+                                                    "tipo": "expresion_simple",
+                                                    "hijos": [
+                                                        {
+                                                            "tipo": "termino",
+                                                            "hijos": [
+                                                                {
+                                                                    "tipo": "factor",
+                                                                    "hijos": [
+                                                                        {
+                                                                            "tipo": "componente",
+                                                                            "hijos": [
+                                                                                {
+                                                                                    "tipo": "numero",
+                                                                                    "valor": "24.0"
+                                                                                }
+                                                                            ]
+                                                                        }
+                                                                    ]
+                                                                }
+                                                            ]
+                                                        },
+                                                        {
+                                                            "tipo": "suma_op",
+                                                            "valor": "+"
+                                                        },
+                                                        {
+                                                            "tipo": "termino",
+                                                            "hijos": [
+                                                                {
+                                                                    "tipo": "factor",
+                                                                    "hijos": [
+                                                                        {
+                                                                            "tipo": "componente",
+                                                                            "hijos": [
+                                                                                {
+                                                                                    "tipo": "numero",
+                                                                                    "valor": "4"
+                                                                                }
+                                                                            ]
+                                                                        }
+                                                                    ]
+                                                                }
+                                                            ]
+                                                        },
+                                                        {
+                                                            "tipo": "suma_op",
+                                                            "valor": "-"
+                                                        },
+                                                        {
+                                                            "tipo": "termino",
+                                                            "hijos": [
+                                                                {
+                                                                    "tipo": "factor",
+                                                                    "hijos": [
+                                                                        {
+                                                                            "tipo": "componente",
+                                                                            "hijos": [
+                                                                                {
+                                                                                    "tipo": "numero",
+                                                                                    "valor": "1"
+                                                                                }
+                                                                            ]
+                                                                        }
+                                                                    ]
+                                                                },
+                                                                {
+                                                                    "tipo": "mult_op",
+                                                                    "valor": "/"
+                                                                },
+                                                                {
+                                                                    "tipo": "factor",
+                                                                    "hijos": [
+                                                                        {
+                                                                            "tipo": "componente",
+                                                                            "hijos": [
+                                                                                {
+                                                                                    "tipo": "numero",
+                                                                                    "valor": "3"
+                                                                                }
+                                                                            ]
+                                                                        }
+                                                                    ]
+                                                                },
+                                                                {
+                                                                    "tipo": "mult_op",
+                                                                    "valor": "*"
+                                                                },
+                                                                {
+                                                                    "tipo": "factor",
+                                                                    "hijos": [
+                                                                        {
+                                                                            "tipo": "componente",
+                                                                            "hijos": [
+                                                                                {
+                                                                                    "tipo": "numero",
+                                                                                    "valor": "2"
+                                                                                }
+                                                                            ]
+                                                                        }
+                                                                    ]
+                                                                }
+                                                            ]
+                                                        },
+                                                        {
+                                                            "tipo": "suma_op",
+                                                            "valor": "+"
+                                                        },
+                                                        {
+                                                            "tipo": "termino",
+                                                            "hijos": [
+                                                                {
+                                                                    "tipo": "factor",
+                                                                    "hijos": [
+                                                                        {
+                                                                            "tipo": "componente",
+                                                                            "hijos": [
+                                                                                {
+                                                                                    "tipo": "numero",
+                                                                                    "valor": "34"
+                                                                                }
+                                                                            ]
+                                                                        }
+                                                                    ]
+                                                                }
+                                                            ]
+                                                        },
+                                                        {
+                                                            "tipo": "suma_op",
+                                                            "valor": "-"
+                                                        },
+                                                        {
+                                                            "tipo": "termino",
+                                                            "hijos": [
+                                                                {
+                                                                    "tipo": "factor",
+                                                                    "hijos": [
+                                                                        {
+                                                                            "tipo": "componente",
+                                                                            "hijos": [
+                                                                                {
+                                                                                    "tipo": "numero",
+                                                                                    "valor": "1"
+                                                                                }
+                                                                            ]
+                                                                        }
+                                                                    ]
+                                                                }
+                                                            ]
+                                                        }
+                                                    ]
+                                                }
+                                            ]
+                                        },
+                                        {
+                                            "tipo": "simbolo",
+                                            "valor": ";"
+                                        }
+                                    ]
+                                }
+                            ]
+                        },
+                        {
+                            "tipo": "asignacion",
+                            "hijos": [
+                                {
+                                    "tipo": "id",
+                                    "valor": "x"
+                                },
+                                {
+                                    "tipo": "operador",
+                                    "valor": "="
+                                },
+                                {
+                                    "tipo": "sent_expresion",
+                                    "hijos": [
+                                        {
+                                            "tipo": "expresion",
+                                            "hijos": [
+                                                {
+                                                    "tipo": "expresion_simple",
+                                                    "hijos": [
+                                                        {
+                                                            "tipo": "termino",
+                                                            "hijos": [
+                                                                {
+                                                                    "tipo": "factor",
+                                                                    "hijos": [
+                                                                        {
+                                                                            "tipo": "componente",
+                                                                            "hijos": [
+                                                                                {
+                                                                                    "tipo": "simbolo",
+                                                                                    "valor": "("
+                                                                                },
+                                                                                {
+                                                                                    "tipo": "expresion",
+                                                                                    "hijos": [
+                                                                                        {
+                                                                                            "tipo": "expresion_simple",
+                                                                                            "hijos": [
+                                                                                                {
+                                                                                                    "tipo": "termino",
+                                                                                                    "hijos": [
+                                                                                                        {
+                                                                                                            "tipo": "factor",
+                                                                                                            "hijos": [
+                                                                                                                {
+                                                                                                                    "tipo": "componente",
+                                                                                                                    "hijos": [
+                                                                                                                        {
+                                                                                                                            "tipo": "numero",
+                                                                                                                            "valor": "5"
+                                                                                                                        }
+                                                                                                                    ]
+                                                                                                                }
+                                                                                                            ]
+                                                                                                        }
+                                                                                                    ]
+                                                                                                },
+                                                                                                {
+                                                                                                    "tipo": "suma_op",
+                                                                                                    "valor": "-"
+                                                                                                },
+                                                                                                {
+                                                                                                    "tipo": "termino",
+                                                                                                    "hijos": [
+                                                                                                        {
+                                                                                                            "tipo": "factor",
+                                                                                                            "hijos": [
+                                                                                                                {
+                                                                                                                    "tipo": "componente",
+                                                                                                                    "hijos": [
+                                                                                                                        {
+                                                                                                                            "tipo": "numero",
+                                                                                                                            "valor": "3"
+                                                                                                                        }
+                                                                                                                    ]
+                                                                                                                }
+                                                                                                            ]
+                                                                                                        }
+                                                                                                    ]
+                                                                                                }
+                                                                                            ]
+                                                                                        }
+                                                                                    ]
+                                                                                },
+                                                                                {
+                                                                                    "tipo": "simbolo",
+                                                                                    "valor": ")"
+                                                                                }
+                                                                            ]
+                                                                        }
+                                                                    ]
+                                                                },
+                                                                {
+                                                                    "tipo": "mult_op",
+                                                                    "valor": "*"
+                                                                },
+                                                                {
+                                                                    "tipo": "factor",
+                                                                    "hijos": [
+                                                                        {
+                                                                            "tipo": "componente",
+                                                                            "hijos": [
+                                                                                {
+                                                                                    "tipo": "simbolo",
+                                                                                    "valor": "("
+                                                                                },
+                                                                                {
+                                                                                    "tipo": "expresion",
+                                                                                    "hijos": [
+                                                                                        {
+                                                                                            "tipo": "expresion_simple",
+                                                                                            "hijos": [
+                                                                                                {
+                                                                                                    "tipo": "termino",
+                                                                                                    "hijos": [
+                                                                                                        {
+                                                                                                            "tipo": "factor",
+                                                                                                            "hijos": [
+                                                                                                                {
+                                                                                                                    "tipo": "componente",
+                                                                                                                    "hijos": [
+                                                                                                                        {
+                                                                                                                            "tipo": "numero",
+                                                                                                                            "valor": "8"
+                                                                                                                        }
+                                                                                                                    ]
+                                                                                                                }
+                                                                                                            ]
+                                                                                                        },
+                                                                                                        {
+                                                                                                            "tipo": "mult_op",
+                                                                                                            "valor": "/"
+                                                                                                        },
+                                                                                                        {
+                                                                                                            "tipo": "factor",
+                                                                                                            "hijos": [
+                                                                                                                {
+                                                                                                                    "tipo": "componente",
+                                                                                                                    "hijos": [
+                                                                                                                        {
+                                                                                                                            "tipo": "numero",
+                                                                                                                            "valor": "2"
+                                                                                                                        }
+                                                                                                                    ]
+                                                                                                                }
+                                                                                                            ]
+                                                                                                        }
+                                                                                                    ]
+                                                                                                }
+                                                                                            ]
+                                                                                        }
+                                                                                    ]
+                                                                                },
+                                                                                {
+                                                                                    "tipo": "simbolo",
+                                                                                    "valor": ")"
+                                                                                }
+                                                                            ]
+                                                                        }
+                                                                    ]
+                                                                }
+                                                            ]
+                                                        }
+                                                    ]
+                                                }
+                                            ]
+                                        },
+                                        {
+                                            "tipo": "simbolo",
+                                            "valor": ";"
+                                        }
+                                    ]
+                                }
+                            ]
+                        },
+                        {
+                            "tipo": "asignacion",
+                            "hijos": [
+                                {
+                                    "tipo": "id",
+                                    "valor": "y"
+                                },
+                                {
+                                    "tipo": "operador",
+                                    "valor": "="
+                                },
+                                {
+                                    "tipo": "sent_expresion",
+                                    "hijos": [
+                                        {
+                                            "tipo": "expresion",
+                                            "hijos": [
+                                                {
+                                                    "tipo": "expresion_simple",
+                                                    "hijos": [
+                                                        {
+                                                            "tipo": "termino",
+                                                            "hijos": [
+                                                                {
+                                                                    "tipo": "factor",
+                                                                    "hijos": [
+                                                                        {
+                                                                            "tipo": "componente",
+                                                                            "hijos": [
+                                                                                {
+                                                                                    "tipo": "numero",
+                                                                                    "valor": "5"
+                                                                                }
+                                                                            ]
+                                                                        }
+                                                                    ]
+                                                                }
+                                                            ]
+                                                        },
+                                                        {
+                                                            "tipo": "suma_op",
+                                                            "valor": "+"
+                                                        },
+                                                        {
+                                                            "tipo": "termino",
+                                                            "hijos": [
+                                                                {
+                                                                    "tipo": "factor",
+                                                                    "hijos": [
+                                                                        {
+                                                                            "tipo": "componente",
+                                                                            "hijos": [
+                                                                                {
+                                                                                    "tipo": "numero",
+                                                                                    "valor": "3"
+                                                                                }
+                                                                            ]
+                                                                        }
+                                                                    ]
+                                                                }
+                                                            ]
+                                                        },
+                                                        {
+                                                            "tipo": "suma_op",
+                                                            "valor": "-"
+                                                        },
+                                                        {
+                                                            "tipo": "termino",
+                                                            "hijos": [
+                                                                {
+                                                                    "tipo": "factor",
+                                                                    "hijos": [
+                                                                        {
+                                                                            "tipo": "componente",
+                                                                            "hijos": [
+                                                                                {
+                                                                                    "tipo": "numero",
+                                                                                    "valor": "2"
+                                                                                }
+                                                                            ]
+                                                                        }
+                                                                    ]
+                                                                },
+                                                                {
+                                                                    "tipo": "mult_op",
+                                                                    "valor": "*"
+                                                                },
+                                                                {
+                                                                    "tipo": "factor",
+                                                                    "hijos": [
+                                                                        {
+                                                                            "tipo": "componente",
+                                                                            "hijos": [
+                                                                                {
+                                                                                    "tipo": "numero",
+                                                                                    "valor": "4"
+                                                                                }
+                                                                            ]
+                                                                        }
+                                                                    ]
+                                                                },
+                                                                {
+                                                                    "tipo": "mult_op",
+                                                                    "valor": "/"
+                                                                },
+                                                                {
+                                                                    "tipo": "factor",
+                                                                    "hijos": [
+                                                                        {
+                                                                            "tipo": "componente",
+                                                                            "hijos": [
+                                                                                {
+                                                                                    "tipo": "numero",
+                                                                                    "valor": "7"
+                                                                                }
+                                                                            ]
+                                                                        }
+                                                                    ]
+                                                                }
+                                                            ]
+                                                        },
+                                                        {
+                                                            "tipo": "suma_op",
+                                                            "valor": "-"
+                                                        },
+                                                        {
+                                                            "tipo": "termino",
+                                                            "hijos": [
+                                                                {
+                                                                    "tipo": "factor",
+                                                                    "hijos": [
+                                                                        {
+                                                                            "tipo": "componente",
+                                                                            "hijos": [
+                                                                                {
+                                                                                    "tipo": "numero",
+                                                                                    "valor": "9"
+                                                                                }
+                                                                            ]
+                                                                        }
+                                                                    ]
+                                                                }
+                                                            ]
+                                                        }
+                                                    ]
+                                                }
+                                            ]
+                                        },
+                                        {
+                                            "tipo": "simbolo",
+                                            "valor": ";"
+                                        }
+                                    ]
+                                }
+                            ]
+                        },
+                        {
+                            "tipo": "asignacion",
+                            "hijos": [
+                                {
+                                    "tipo": "id",
+                                    "valor": "z"
+                                },
+                                {
+                                    "tipo": "operador",
+                                    "valor": "="
+                                },
+                                {
+                                    "tipo": "sent_expresion",
+                                    "hijos": [
+                                        {
+                                            "tipo": "expresion",
+                                            "hijos": [
+                                                {
+                                                    "tipo": "expresion_simple",
+                                                    "hijos": [
+                                                        {
+                                                            "tipo": "termino",
+                                                            "hijos": [
+                                                                {
+                                                                    "tipo": "factor",
+                                                                    "hijos": [
+                                                                        {
+                                                                            "tipo": "componente",
+                                                                            "hijos": [
+                                                                                {
+                                                                                    "tipo": "numero",
+                                                                                    "valor": "8"
+                                                                                }
+                                                                            ]
+                                                                        }
+                                                                    ]
+                                                                },
+                                                                {
+                                                                    "tipo": "mult_op",
+                                                                    "valor": "/"
+                                                                },
+                                                                {
+                                                                    "tipo": "factor",
+                                                                    "hijos": [
+                                                                        {
+                                                                            "tipo": "componente",
+                                                                            "hijos": [
+                                                                                {
+                                                                                    "tipo": "numero",
+                                                                                    "valor": "2"
+                                                                                }
+                                                                            ]
+                                                                        }
+                                                                    ]
+                                                                }
+                                                            ]
+                                                        },
+                                                        {
+                                                            "tipo": "suma_op",
+                                                            "valor": "+"
+                                                        },
+                                                        {
+                                                            "tipo": "termino",
+                                                            "hijos": [
+                                                                {
+                                                                    "tipo": "factor",
+                                                                    "hijos": [
+                                                                        {
+                                                                            "tipo": "componente",
+                                                                            "hijos": [
+                                                                                {
+                                                                                    "tipo": "numero",
+                                                                                    "valor": "15"
+                                                                                }
+                                                                            ]
+                                                                        }
+                                                                    ]
+                                                                },
+                                                                {
+                                                                    "tipo": "mult_op",
+                                                                    "valor": "*"
+                                                                },
+                                                                {
+                                                                    "tipo": "factor",
+                                                                    "hijos": [
+                                                                        {
+                                                                            "tipo": "componente",
+                                                                            "hijos": [
+                                                                                {
+                                                                                    "tipo": "numero",
+                                                                                    "valor": "4"
+                                                                                }
+                                                                            ]
+                                                                        }
+                                                                    ]
+                                                                }
+                                                            ]
+                                                        }
+                                                    ]
+                                                }
+                                            ]
+                                        },
+                                        {
+                                            "tipo": "simbolo",
+                                            "valor": ";"
+                                        }
+                                    ]
+                                }
+                            ]
+                        },
+                        {
+                            "tipo": "asignacion",
+                            "hijos": [
+                                {
+                                    "tipo": "id",
+                                    "valor": "y"
+                                },
+                                {
+                                    "tipo": "operador",
+                                    "valor": "="
+                                },
+                                {
+                                    "tipo": "sent_expresion",
+                                    "hijos": [
+                                        {
+                                            "tipo": "expresion",
+                                            "hijos": [
+                                                {
+                                                    "tipo": "expresion_simple",
+                                                    "hijos": [
+                                                        {
+                                                            "tipo": "termino",
+                                                            "hijos": [
+                                                                {
+                                                                    "tipo": "factor",
+                                                                    "hijos": [
+                                                                        {
+                                                                            "tipo": "componente",
+                                                                            "hijos": [
+                                                                                {
+                                                                                    "tipo": "numero",
+                                                                                    "valor": "14"
+                                                                                }
+                                                                            ]
+                                                                        }
+                                                                    ]
+                                                                }
+                                                            ]
+                                                        }
+                                                    ]
+                                                }
+                                            ]
+                                        },
+                                        {
+                                            "tipo": "simbolo",
+                                            "valor": ";"
+                                        }
+                                    ]
+                                }
+                            ]
+                        },
+                        {
+                            "tipo": "seleccion",
+                            "hijos": [
+                                {
+                                    "tipo": "keyword",
+                                    "valor": "if"
+                                },
+                                {
+                                    "tipo": "expresion",
+                                    "hijos": [
+                                        {
+                                            "tipo": "expresion_simple",
+                                            "hijos": [
+                                                {
+                                                    "tipo": "termino",
+                                                    "hijos": [
+                                                        {
+                                                            "tipo": "factor",
+                                                            "hijos": [
+                                                                {
+                                                                    "tipo": "componente",
+                                                                    "hijos": [
+                                                                        {
+                                                                            "tipo": "numero",
+                                                                            "valor": "2"
+                                                                        }
+                                                                    ]
+                                                                }
+                                                            ]
+                                                        }
+                                                    ]
+                                                }
+                                            ]
+                                        },
+                                        {
+                                            "tipo": "op_relacional",
+                                            "valor": ">"
+                                        },
+                                        {
+                                            "tipo": "expresion_simple",
+                                            "hijos": [
+                                                {
+                                                    "tipo": "termino",
+                                                    "hijos": [
+                                                        {
+                                                            "tipo": "factor",
+                                                            "hijos": [
+                                                                {
+                                                                    "tipo": "componente",
+                                                                    "hijos": [
+                                                                        {
+                                                                            "tipo": "numero",
+                                                                            "valor": "3"
+                                                                        }
+                                                                    ]
+                                                                }
+                                                            ]
+                                                        }
+                                                    ]
+                                                }
+                                            ]
+                                        }
+                                    ]
+                                },
+                                {
+                                    "tipo": "simbolo",
+                                    "valor": "then"
+                                },
+                                {
+                                    "tipo": "lista_sentencias",
+                                    "hijos": [
+                                        {
+                                            "tipo": "asignacion",
+                                            "hijos": [
+                                                {
+                                                    "tipo": "id",
+                                                    "valor": "y"
+                                                },
+                                                {
+                                                    "tipo": "operador",
+                                                    "valor": "="
+                                                },
+                                                {
+                                                    "tipo": "sent_expresion",
+                                                    "hijos": [
+                                                        {
+                                                            "tipo": "expresion",
+                                                            "hijos": [
+                                                                {
+                                                                    "tipo": "expresion_simple",
+                                                                    "hijos": [
+                                                                        {
+                                                                            "tipo": "termino",
+                                                                            "hijos": [
+                                                                                {
+                                                                                    "tipo": "factor",
+                                                                                    "hijos": [
+                                                                                        {
+                                                                                            "tipo": "componente",
+                                                                                            "hijos": [
+                                                                                                {
+                                                                                                    "tipo": "id",
+                                                                                                    "valor": "a"
+                                                                                                }
+                                                                                            ]
+                                                                                        }
+                                                                                    ]
+                                                                                }
+                                                                            ]
+                                                                        },
+                                                                        {
+                                                                            "tipo": "suma_op",
+                                                                            "valor": "+"
+                                                                        },
+                                                                        {
+                                                                            "tipo": "termino",
+                                                                            "hijos": [
+                                                                                {
+                                                                                    "tipo": "factor",
+                                                                                    "hijos": [
+                                                                                        {
+                                                                                            "tipo": "componente",
+                                                                                            "hijos": [
+                                                                                                {
+                                                                                                    "tipo": "numero",
+                                                                                                    "valor": "3"
+                                                                                                }
+                                                                                            ]
+                                                                                        }
+                                                                                    ]
+                                                                                }
+                                                                            ]
+                                                                        }
+                                                                    ]
+                                                                }
+                                                            ]
+                                                        },
+                                                        {
+                                                            "tipo": "simbolo",
+                                                            "valor": ";"
+                                                        }
+                                                    ]
+                                                }
+                                            ]
+                                        }
+                                    ]
+                                },
+                                {
+                                    "tipo": "keyword",
+                                    "valor": "else"
+                                },
+                                {
+                                    "tipo": "lista_sentencias",
+                                    "hijos": [
+                                        {
+                                            "tipo": "seleccion",
+                                            "hijos": [
+                                                {
+                                                    "tipo": "keyword",
+                                                    "valor": "if"
+                                                },
+                                                {
+                                                    "tipo": "expresion",
+                                                    "hijos": [
+                                                        {
+                                                            "tipo": "expresion_simple",
+                                                            "hijos": [
+                                                                {
+                                                                    "tipo": "termino",
+                                                                    "hijos": [
+                                                                        {
+                                                                            "tipo": "factor",
+                                                                            "hijos": [
+                                                                                {
+                                                                                    "tipo": "componente",
+                                                                                    "hijos": [
+                                                                                        {
+                                                                                            "tipo": "numero",
+                                                                                            "valor": "4"
+                                                                                        }
+                                                                                    ]
+                                                                                }
+                                                                            ]
+                                                                        }
+                                                                    ]
+                                                                }
+                                                            ]
+                                                        },
+                                                        {
+                                                            "tipo": "op_relacional",
+                                                            "valor": ">"
+                                                        },
+                                                        {
+                                                            "tipo": "expresion_simple",
+                                                            "hijos": [
+                                                                {
+                                                                    "tipo": "termino",
+                                                                    "hijos": [
+                                                                        {
+                                                                            "tipo": "factor",
+                                                                            "hijos": [
+                                                                                {
+                                                                                    "tipo": "componente",
+                                                                                    "hijos": [
+                                                                                        {
+                                                                                            "tipo": "numero",
+                                                                                            "valor": "2"
+                                                                                        }
+                                                                                    ]
+                                                                                }
+                                                                            ]
+                                                                        }
+                                                                    ]
+                                                                }
+                                                            ]
+                                                        }
+                                                    ]
+                                                },
+                                                {
+                                                    "tipo": "simbolo",
+                                                    "valor": "then"
+                                                },
+                                                {
+                                                    "tipo": "lista_sentencias",
+                                                    "hijos": [
+                                                        {
+                                                            "tipo": "asignacion",
+                                                            "hijos": [
+                                                                {
+                                                                    "tipo": "id",
+                                                                    "valor": "b"
+                                                                },
+                                                                {
+                                                                    "tipo": "operador",
+                                                                    "valor": "="
+                                                                },
+                                                                {
+                                                                    "tipo": "sent_expresion",
+                                                                    "hijos": [
+                                                                        {
+                                                                            "tipo": "expresion",
+                                                                            "hijos": [
+                                                                                {
+                                                                                    "tipo": "expresion_simple",
+                                                                                    "hijos": [
+                                                                                        {
+                                                                                            "tipo": "termino",
+                                                                                            "hijos": [
+                                                                                                {
+                                                                                                    "tipo": "factor",
+                                                                                                    "hijos": [
+                                                                                                        {
+                                                                                                            "tipo": "componente",
+                                                                                                            "hijos": [
+                                                                                                                {
+                                                                                                                    "tipo": "numero",
+                                                                                                                    "valor": "3.2"
+                                                                                                                }
+                                                                                                            ]
+                                                                                                        }
+                                                                                                    ]
+                                                                                                }
+                                                                                            ]
+                                                                                        }
+                                                                                    ]
+                                                                                }
+                                                                            ]
+                                                                        },
+                                                                        {
+                                                                            "tipo": "simbolo",
+                                                                            "valor": ";"
+                                                                        }
+                                                                    ]
+                                                                }
+                                                            ]
+                                                        }
+                                                    ]
+                                                },
+                                                {
+                                                    "tipo": "keyword",
+                                                    "valor": "else"
+                                                },
+                                                {
+                                                    "tipo": "lista_sentencias",
+                                                    "hijos": [
+                                                        {
+                                                            "tipo": "asignacion",
+                                                            "hijos": [
+                                                                {
+                                                                    "tipo": "id",
+                                                                    "valor": "b"
+                                                                },
+                                                                {
+                                                                    "tipo": "operador",
+                                                                    "valor": "="
+                                                                },
+                                                                {
+                                                                    "tipo": "sent_expresion",
+                                                                    "hijos": [
+                                                                        {
+                                                                            "tipo": "expresion",
+                                                                            "hijos": [
+                                                                                {
+                                                                                    "tipo": "expresion_simple",
+                                                                                    "hijos": [
+                                                                                        {
+                                                                                            "tipo": "termino",
+                                                                                            "hijos": [
+                                                                                                {
+                                                                                                    "tipo": "factor",
+                                                                                                    "hijos": [
+                                                                                                        {
+                                                                                                            "tipo": "componente",
+                                                                                                            "hijos": [
+                                                                                                                {
+                                                                                                                    "tipo": "numero",
+                                                                                                                    "valor": "5.0"
+                                                                                                                }
+                                                                                                            ]
+                                                                                                        }
+                                                                                                    ]
+                                                                                                }
+                                                                                            ]
+                                                                                        }
+                                                                                    ]
+                                                                                }
+                                                                            ]
+                                                                        },
+                                                                        {
+                                                                            "tipo": "simbolo",
+                                                                            "valor": ";"
+                                                                        }
+                                                                    ]
+                                                                }
+                                                            ]
+                                                        }
+                                                    ]
+                                                },
+                                                {
+                                                    "tipo": "simbolo",
+                                                    "valor": "end"
+                                                }
+                                            ]
+                                        },
+                                        {
+                                            "tipo": "asignacion",
+                                            "hijos": [
+                                                {
+                                                    "tipo": "id",
+                                                    "valor": "y"
+                                                },
+                                                {
+                                                    "tipo": "operador",
+                                                    "valor": "="
+                                                },
+                                                {
+                                                    "tipo": "sent_expresion",
+                                                    "hijos": [
+                                                        {
+                                                            "tipo": "expresion",
+                                                            "hijos": [
+                                                                {
+                                                                    "tipo": "expresion_simple",
+                                                                    "hijos": [
+                                                                        {
+                                                                            "tipo": "termino",
+                                                                            "hijos": [
+                                                                                {
+                                                                                    "tipo": "factor",
+                                                                                    "hijos": [
+                                                                                        {
+                                                                                            "tipo": "componente",
+                                                                                            "hijos": [
+                                                                                                {
+                                                                                                    "tipo": "id",
+                                                                                                    "valor": "y"
+                                                                                                }
+                                                                                            ]
+                                                                                        }
+                                                                                    ]
+                                                                                }
+                                                                            ]
+                                                                        },
+                                                                        {
+                                                                            "tipo": "suma_op",
+                                                                            "valor": "+"
+                                                                        },
+                                                                        {
+                                                                            "tipo": "termino",
+                                                                            "hijos": [
+                                                                                {
+                                                                                    "tipo": "factor",
+                                                                                    "hijos": [
+                                                                                        {
+                                                                                            "tipo": "componente",
+                                                                                            "hijos": [
+                                                                                                {
+                                                                                                    "tipo": "numero",
+                                                                                                    "valor": "1"
+                                                                                                }
+                                                                                            ]
+                                                                                        }
+                                                                                    ]
+                                                                                }
+                                                                            ]
+                                                                        }
+                                                                    ]
+                                                                }
+                                                            ]
+                                                        },
+                                                        {
+                                                            "tipo": "simbolo",
+                                                            "valor": ";"
+                                                        }
+                                                    ]
+                                                }
+                                            ]
+                                        }
+                                    ]
+                                },
+                                {
+                                    "tipo": "simbolo",
+                                    "valor": "end"
+                                }
+                            ]
+                        },
+                        {
+                            "tipo": "asignacion",
+                            "hijos": [
+                                {
+                                    "tipo": "id",
+                                    "valor": "a"
+                                },
+                                {
+                                    "tipo": "operador",
+                                    "valor": "="
+                                },
+                                {
+                                    "tipo": "sent_expresion",
+                                    "hijos": [
+                                        {
+                                            "tipo": "expresion",
+                                            "hijos": [
+                                                {
+                                                    "tipo": "expresion_simple",
+                                                    "hijos": [
+                                                        {
+                                                            "tipo": "termino",
+                                                            "hijos": [
+                                                                {
+                                                                    "tipo": "factor",
+                                                                    "hijos": [
+                                                                        {
+                                                                            "tipo": "componente",
+                                                                            "hijos": [
+                                                                                {
+                                                                                    "tipo": "id",
+                                                                                    "valor": "a"
+                                                                                }
+                                                                            ]
+                                                                        }
+                                                                    ]
+                                                                }
+                                                            ]
+                                                        },
+                                                        {
+                                                            "tipo": "suma_op",
+                                                            "valor": "+"
+                                                        },
+                                                        {
+                                                            "tipo": "termino",
+                                                            "hijos": [
+                                                                {
+                                                                    "tipo": "factor",
+                                                                    "hijos": [
+                                                                        {
+                                                                            "tipo": "componente",
+                                                                            "hijos": [
+                                                                                {
+                                                                                    "tipo": "numero",
+                                                                                    "valor": "1"
+                                                                                }
+                                                                            ]
+                                                                        }
+                                                                    ]
+                                                                }
+                                                            ]
+                                                        }
+                                                    ]
+                                                }
+                                            ]
+                                        },
+                                        {
+                                            "tipo": "simbolo",
+                                            "valor": ";"
+                                        }
+                                    ]
+                                }
+                            ]
+                        },
+                        {
+                            "tipo": "asignacion",
+                            "hijos": [
+                                {
+                                    "tipo": "id",
+                                    "valor": "c"
+                                },
+                                {
+                                    "tipo": "operador",
+                                    "valor": "="
+                                },
+                                {
+                                    "tipo": "sent_expresion",
+                                    "hijos": [
+                                        {
+                                            "tipo": "expresion",
+                                            "hijos": [
+                                                {
+                                                    "tipo": "expresion_simple",
+                                                    "hijos": [
+                                                        {
+                                                            "tipo": "termino",
+                                                            "hijos": [
+                                                                {
+                                                                    "tipo": "factor",
+                                                                    "hijos": [
+                                                                        {
+                                                                            "tipo": "componente",
+                                                                            "hijos": [
+                                                                                {
+                                                                                    "tipo": "id",
+                                                                                    "valor": "c"
+                                                                                }
+                                                                            ]
+                                                                        }
+                                                                    ]
+                                                                }
+                                                            ]
+                                                        },
+                                                        {
+                                                            "tipo": "suma_op",
+                                                            "valor": "-"
+                                                        },
+                                                        {
+                                                            "tipo": "termino",
+                                                            "hijos": [
+                                                                {
+                                                                    "tipo": "factor",
+                                                                    "hijos": [
+                                                                        {
+                                                                            "tipo": "componente",
+                                                                            "hijos": [
+                                                                                {
+                                                                                    "tipo": "numero",
+                                                                                    "valor": "1"
+                                                                                }
+                                                                            ]
+                                                                        }
+                                                                    ]
+                                                                }
+                                                            ]
+                                                        }
+                                                    ]
+                                                }
+                                            ]
+                                        },
+                                        {
+                                            "tipo": "simbolo",
+                                            "valor": ";"
+                                        }
+                                    ]
+                                }
+                            ]
+                        },
+                        {
+                            "tipo": "asignacion",
+                            "hijos": [
+                                {
+                                    "tipo": "id",
+                                    "valor": "x"
+                                },
+                                {
+                                    "tipo": "operador",
+                                    "valor": "="
+                                },
+                                {
+                                    "tipo": "sent_expresion",
+                                    "hijos": [
+                                        {
+                                            "tipo": "expresion",
+                                            "hijos": [
+                                                {
+                                                    "tipo": "expresion_simple",
+                                                    "hijos": [
+                                                        {
+                                                            "tipo": "termino",
+                                                            "hijos": [
+                                                                {
+                                                                    "tipo": "factor",
+                                                                    "hijos": [
+                                                                        {
+                                                                            "tipo": "componente",
+                                                                            "hijos": [
+                                                                                {
+                                                                                    "tipo": "numero",
+                                                                                    "valor": "3"
+                                                                                }
+                                                                            ]
+                                                                        }
+                                                                    ]
+                                                                }
+                                                            ]
+                                                        },
+                                                        {
+                                                            "tipo": "suma_op",
+                                                            "valor": "+"
+                                                        },
+                                                        {
+                                                            "tipo": "termino",
+                                                            "hijos": [
+                                                                {
+                                                                    "tipo": "factor",
+                                                                    "hijos": [
+                                                                        {
+                                                                            "tipo": "componente",
+                                                                            "hijos": [
+                                                                                {
+                                                                                    "tipo": "numero",
+                                                                                    "valor": "4"
+                                                                                }
+                                                                            ]
+                                                                        }
+                                                                    ]
+                                                                }
+                                                            ]
+                                                        }
+                                                    ]
+                                                }
+                                            ]
+                                        },
+                                        {
+                                            "tipo": "simbolo",
+                                            "valor": ";"
+                                        }
+                                    ]
+                                }
+                            ]
+                        },
+                        {
+                            "tipo": "repeticion",
+                            "hijos": [
+                                {
+                                    "tipo": "keyword",
+                                    "valor": "do"
+                                },
+                                {
+                                    "tipo": "simbolo",
+                                    "valor": "{"
+                                },
+                                {
+                                    "tipo": "lista_sentencias",
+                                    "hijos": [
+                                        {
+                                            "tipo": "asignacion",
+                                            "hijos": [
+                                                {
+                                                    "tipo": "id",
+                                                    "valor": "y"
+                                                },
+                                                {
+                                                    "tipo": "operador",
+                                                    "valor": "="
+                                                },
+                                                {
+                                                    "tipo": "sent_expresion",
+                                                    "hijos": [
+                                                        {
+                                                            "tipo": "expresion",
+                                                            "hijos": [
+                                                                {
+                                                                    "tipo": "expresion_simple",
+                                                                    "hijos": [
+                                                                        {
+                                                                            "tipo": "termino",
+                                                                            "hijos": [
+                                                                                {
+                                                                                    "tipo": "factor",
+                                                                                    "hijos": [
+                                                                                        {
+                                                                                            "tipo": "componente",
+                                                                                            "hijos": [
+                                                                                                {
+                                                                                                    "tipo": "simbolo",
+                                                                                                    "valor": "("
+                                                                                                },
+                                                                                                {
+                                                                                                    "tipo": "expresion",
+                                                                                                    "hijos": [
+                                                                                                        {
+                                                                                                            "tipo": "expresion_simple",
+                                                                                                            "hijos": [
+                                                                                                                {
+                                                                                                                    "tipo": "termino",
+                                                                                                                    "hijos": [
+                                                                                                                        {
+                                                                                                                            "tipo": "factor",
+                                                                                                                            "hijos": [
+                                                                                                                                {
+                                                                                                                                    "tipo": "componente",
+                                                                                                                                    "hijos": [
+                                                                                                                                        {
+                                                                                                                                            "tipo": "id",
+                                                                                                                                            "valor": "y"
+                                                                                                                                        }
+                                                                                                                                    ]
+                                                                                                                                }
+                                                                                                                            ]
+                                                                                                                        }
+                                                                                                                    ]
+                                                                                                                },
+                                                                                                                {
+                                                                                                                    "tipo": "suma_op",
+                                                                                                                    "valor": "+"
+                                                                                                                },
+                                                                                                                {
+                                                                                                                    "tipo": "termino",
+                                                                                                                    "hijos": [
+                                                                                                                        {
+                                                                                                                            "tipo": "factor",
+                                                                                                                            "hijos": [
+                                                                                                                                {
+                                                                                                                                    "tipo": "componente",
+                                                                                                                                    "hijos": [
+                                                                                                                                        {
+                                                                                                                                            "tipo": "numero",
+                                                                                                                                            "valor": "1"
+                                                                                                                                        }
+                                                                                                                                    ]
+                                                                                                                                }
+                                                                                                                            ]
+                                                                                                                        }
+                                                                                                                    ]
+                                                                                                                }
+                                                                                                            ]
+                                                                                                        }
+                                                                                                    ]
+                                                                                                },
+                                                                                                {
+                                                                                                    "tipo": "simbolo",
+                                                                                                    "valor": ")"
+                                                                                                }
+                                                                                            ]
+                                                                                        }
+                                                                                    ]
+                                                                                },
+                                                                                {
+                                                                                    "tipo": "mult_op",
+                                                                                    "valor": "*"
+                                                                                },
+                                                                                {
+                                                                                    "tipo": "factor",
+                                                                                    "hijos": [
+                                                                                        {
+                                                                                            "tipo": "componente",
+                                                                                            "hijos": [
+                                                                                                {
+                                                                                                    "tipo": "numero",
+                                                                                                    "valor": "2"
+                                                                                                }
+                                                                                            ]
+                                                                                        }
+                                                                                    ]
+                                                                                }
+                                                                            ]
+                                                                        },
+                                                                        {
+                                                                            "tipo": "suma_op",
+                                                                            "valor": "+"
+                                                                        },
+                                                                        {
+                                                                            "tipo": "termino",
+                                                                            "hijos": [
+                                                                                {
+                                                                                    "tipo": "factor",
+                                                                                    "hijos": [
+                                                                                        {
+                                                                                            "tipo": "componente",
+                                                                                            "hijos": [
+                                                                                                {
+                                                                                                    "tipo": "numero",
+                                                                                                    "valor": "1"
+                                                                                                }
+                                                                                            ]
+                                                                                        }
+                                                                                    ]
+                                                                                }
+                                                                            ]
+                                                                        }
+                                                                    ]
+                                                                }
+                                                            ]
+                                                        },
+                                                        {
+                                                            "tipo": "simbolo",
+                                                            "valor": ";"
+                                                        }
+                                                    ]
+                                                }
+                                            ]
+                                        }
+                                    ]
+                                },
+                                {
+                                    "tipo": "simbolo",
+                                    "valor": "}"
+                                },
+                                {
+                                    "tipo": "keyword",
+                                    "valor": "while"
+                                },
+                                {
+                                    "tipo": "expresion",
+                                    "hijos": [
+                                        {
+                                            "tipo": "expresion_simple",
+                                            "hijos": [
+                                                {
+                                                    "tipo": "termino",
+                                                    "hijos": [
+                                                        {
+                                                            "tipo": "factor",
+                                                            "hijos": [
+                                                                {
+                                                                    "tipo": "componente",
+                                                                    "hijos": [
+                                                                        {
+                                                                            "tipo": "id",
+                                                                            "valor": "x"
+                                                                        }
+                                                                    ]
+                                                                }
+                                                            ]
+                                                        }
+                                                    ]
+                                                }
+                                            ]
+                                        },
+                                        {
+                                            "tipo": "op_relacional",
+                                            "valor": ">"
+                                        },
+                                        {
+                                            "tipo": "expresion_simple",
+                                            "hijos": [
+                                                {
+                                                    "tipo": "termino",
+                                                    "hijos": [
+                                                        {
+                                                            "tipo": "factor",
+                                                            "hijos": [
+                                                                {
+                                                                    "tipo": "componente",
+                                                                    "hijos": [
+                                                                        {
+                                                                            "tipo": "numero",
+                                                                            "valor": "7"
+                                                                        }
+                                                                    ]
+                                                                }
+                                                            ]
+                                                        }
+                                                    ]
+                                                }
+                                            ]
+                                        }
+                                    ]
+                                },
+                                {
+                                    "tipo": "simbolo",
+                                    "valor": ";"
+                                }
+                            ]
+                        },
+                        {
+                            "tipo": "iteracion",
+                            "hijos": [
+                                {
+                                    "tipo": "keyword",
+                                    "valor": "while"
+                                },
+                                {
+                                    "tipo": "expresion",
+                                    "hijos": [
+                                        {
+                                            "tipo": "expresion_simple",
+                                            "hijos": [
+                                                {
+                                                    "tipo": "termino",
+                                                    "hijos": [
+                                                        {
+                                                            "tipo": "factor",
+                                                            "hijos": [
+                                                                {
+                                                                    "tipo": "componente",
+                                                                    "hijos": [
+                                                                        {
+                                                                            "tipo": "id",
+                                                                            "valor": "x"
+                                                                        }
+                                                                    ]
+                                                                }
+                                                            ]
+                                                        }
+                                                    ]
+                                                }
+                                            ]
+                                        },
+                                        {
+                                            "tipo": "op_relacional",
+                                            "valor": ">"
+                                        },
+                                        {
+                                            "tipo": "expresion_simple",
+                                            "hijos": [
+                                                {
+                                                    "tipo": "termino",
+                                                    "hijos": [
+                                                        {
+                                                            "tipo": "factor",
+                                                            "hijos": [
+                                                                {
+                                                                    "tipo": "componente",
+                                                                    "hijos": [
+                                                                        {
+                                                                            "tipo": "numero",
+                                                                            "valor": "7"
+                                                                        }
+                                                                    ]
+                                                                }
+                                                            ]
+                                                        }
+                                                    ]
+                                                }
+                                            ]
+                                        }
+                                    ]
+                                },
+                                {
+                                    "tipo": "simbolo",
+                                    "valor": "{"
+                                },
+                                {
+                                    "tipo": "lista_sentencias",
+                                    "hijos": [
+                                        {
+                                            "tipo": "asignacion",
+                                            "hijos": [
+                                                {
+                                                    "tipo": "id",
+                                                    "valor": "x"
+                                                },
+                                                {
+                                                    "tipo": "operador",
+                                                    "valor": "="
+                                                },
+                                                {
+                                                    "tipo": "sent_expresion",
+                                                    "hijos": [
+                                                        {
+                                                            "tipo": "expresion",
+                                                            "hijos": [
+                                                                {
+                                                                    "tipo": "expresion_simple",
+                                                                    "hijos": [
+                                                                        {
+                                                                            "tipo": "termino",
+                                                                            "hijos": [
+                                                                                {
+                                                                                    "tipo": "factor",
+                                                                                    "hijos": [
+                                                                                        {
+                                                                                            "tipo": "componente",
+                                                                                            "hijos": [
+                                                                                                {
+                                                                                                    "tipo": "numero",
+                                                                                                    "valor": "6"
+                                                                                                }
+                                                                                            ]
+                                                                                        }
+                                                                                    ]
+                                                                                }
+                                                                            ]
+                                                                        },
+                                                                        {
+                                                                            "tipo": "suma_op",
+                                                                            "valor": "+"
+                                                                        },
+                                                                        {
+                                                                            "tipo": "termino",
+                                                                            "hijos": [
+                                                                                {
+                                                                                    "tipo": "factor",
+                                                                                    "hijos": [
+                                                                                        {
+                                                                                            "tipo": "componente",
+                                                                                            "hijos": [
+                                                                                                {
+                                                                                                    "tipo": "numero",
+                                                                                                    "valor": "8"
+                                                                                                }
+                                                                                            ]
+                                                                                        }
+                                                                                    ]
+                                                                                },
+                                                                                {
+                                                                                    "tipo": "mult_op",
+                                                                                    "valor": "/"
+                                                                                },
+                                                                                {
+                                                                                    "tipo": "factor",
+                                                                                    "hijos": [
+                                                                                        {
+                                                                                            "tipo": "componente",
+                                                                                            "hijos": [
+                                                                                                {
+                                                                                                    "tipo": "numero",
+                                                                                                    "valor": "9"
+                                                                                                }
+                                                                                            ]
+                                                                                        }
+                                                                                    ]
+                                                                                },
+                                                                                {
+                                                                                    "tipo": "mult_op",
+                                                                                    "valor": "*"
+                                                                                },
+                                                                                {
+                                                                                    "tipo": "factor",
+                                                                                    "hijos": [
+                                                                                        {
+                                                                                            "tipo": "componente",
+                                                                                            "hijos": [
+                                                                                                {
+                                                                                                    "tipo": "numero",
+                                                                                                    "valor": "8"
+                                                                                                }
+                                                                                            ]
+                                                                                        }
+                                                                                    ]
+                                                                                },
+                                                                                {
+                                                                                    "tipo": "mult_op",
+                                                                                    "valor": "/"
+                                                                                },
+                                                                                {
+                                                                                    "tipo": "factor",
+                                                                                    "hijos": [
+                                                                                        {
+                                                                                            "tipo": "componente",
+                                                                                            "hijos": [
+                                                                                                {
+                                                                                                    "tipo": "numero",
+                                                                                                    "valor": "3"
+                                                                                                }
+                                                                                            ]
+                                                                                        }
+                                                                                    ]
+                                                                                }
+                                                                            ]
+                                                                        }
+                                                                    ]
+                                                                }
+                                                            ]
+                                                        },
+                                                        {
+                                                            "tipo": "simbolo",
+                                                            "valor": ";"
+                                                        }
+                                                    ]
+                                                }
+                                            ]
+                                        },
+                                        {
+                                            "tipo": "sent_in",
+                                            "hijos": [
+                                                {
+                                                    "tipo": "keyword",
+                                                    "valor": "cin"
+                                                },
+                                                {
+                                                    "tipo": "operador",
+                                                    "valor": ">>"
+                                                },
+                                                {
+                                                    "tipo": "id",
+                                                    "valor": "x"
+                                                },
+                                                {
+                                                    "tipo": "simbolo",
+                                                    "valor": ";"
+                                                }
+                                            ]
+                                        },
+                                        {
+                                            "tipo": "asignacion",
+                                            "hijos": [
+                                                {
+                                                    "tipo": "id",
+                                                    "valor": "mas"
+                                                },
+                                                {
+                                                    "tipo": "operador",
+                                                    "valor": "="
+                                                },
+                                                {
+                                                    "tipo": "sent_expresion",
+                                                    "hijos": [
+                                                        {
+                                                            "tipo": "expresion",
+                                                            "hijos": [
+                                                                {
+                                                                    "tipo": "expresion_simple",
+                                                                    "hijos": [
+                                                                        {
+                                                                            "tipo": "termino",
+                                                                            "hijos": [
+                                                                                {
+                                                                                    "tipo": "factor",
+                                                                                    "hijos": [
+                                                                                        {
+                                                                                            "tipo": "componente",
+                                                                                            "hijos": [
+                                                                                                {
+                                                                                                    "tipo": "numero",
+                                                                                                    "valor": "36"
+                                                                                                }
+                                                                                            ]
+                                                                                        }
+                                                                                    ]
+                                                                                },
+                                                                                {
+                                                                                    "tipo": "mult_op",
+                                                                                    "valor": "/"
+                                                                                },
+                                                                                {
+                                                                                    "tipo": "factor",
+                                                                                    "hijos": [
+                                                                                        {
+                                                                                            "tipo": "componente",
+                                                                                            "hijos": [
+                                                                                                {
+                                                                                                    "tipo": "numero",
+                                                                                                    "valor": "7"
+                                                                                                }
+                                                                                            ]
+                                                                                        }
+                                                                                    ]
+                                                                                }
+                                                                            ]
+                                                                        }
+                                                                    ]
+                                                                }
+                                                            ]
+                                                        },
+                                                        {
+                                                            "tipo": "simbolo",
+                                                            "valor": ";"
+                                                        }
+                                                    ]
+                                                }
+                                            ]
+                                        }
+                                    ]
+                                },
+                                {
+                                    "tipo": "simbolo",
+                                    "valor": "}"
+                                }
+                            ]
+                        },
+                        {
+                            "tipo": "iteracion",
+                            "hijos": [
+                                {
+                                    "tipo": "keyword",
+                                    "valor": "while"
+                                },
+                                {
+                                    "tipo": "expresion",
+                                    "hijos": [
+                                        {
+                                            "tipo": "expresion_simple",
+                                            "hijos": [
+                                                {
+                                                    "tipo": "termino",
+                                                    "hijos": [
+                                                        {
+                                                            "tipo": "factor",
+                                                            "hijos": [
+                                                                {
+                                                                    "tipo": "componente",
+                                                                    "hijos": [
+                                                                        {
+                                                                            "tipo": "id",
+                                                                            "valor": "y"
+                                                                        }
+                                                                    ]
+                                                                }
+                                                            ]
+                                                        }
+                                                    ]
+                                                }
+                                            ]
+                                        },
+                                        {
+                                            "tipo": "op_relacional",
+                                            "valor": "=="
+                                        },
+                                        {
+                                            "tipo": "expresion_simple",
+                                            "hijos": [
+                                                {
+                                                    "tipo": "termino",
+                                                    "hijos": [
+                                                        {
+                                                            "tipo": "factor",
+                                                            "hijos": [
+                                                                {
+                                                                    "tipo": "componente",
+                                                                    "hijos": [
+                                                                        {
+                                                                            "tipo": "numero",
+                                                                            "valor": "0"
+                                                                        }
+                                                                    ]
+                                                                }
+                                                            ]
+                                                        }
+                                                    ]
+                                                }
+                                            ]
+                                        }
+                                    ]
+                                },
+                                {
+                                    "tipo": "simbolo",
+                                    "valor": "{"
+                                },
+                                {
+                                    "tipo": "lista_sentencias",
+                                    "hijos": [
+                                        {
+                                            "tipo": "sent_in",
+                                            "hijos": [
+                                                {
+                                                    "tipo": "keyword",
+                                                    "valor": "cin"
+                                                },
+                                                {
+                                                    "tipo": "operador",
+                                                    "valor": ">>"
+                                                },
+                                                {
+                                                    "tipo": "id",
+                                                    "valor": "mas"
+                                                },
+                                                {
+                                                    "tipo": "simbolo",
+                                                    "valor": ";"
+                                                }
+                                            ]
+                                        },
+                                        {
+                                            "tipo": "sent_out",
+                                            "hijos": [
+                                                {
+                                                    "tipo": "keyword",
+                                                    "valor": "cout"
+                                                },
+                                                {
+                                                    "tipo": "operador",
+                                                    "valor": "<<"
+                                                },
+                                                {
+                                                    "tipo": "salida",
+                                                    "hijos": [
+                                                        {
+                                                            "tipo": "expresion",
+                                                            "hijos": [
+                                                                {
+                                                                    "tipo": "expresion_simple",
+                                                                    "hijos": [
+                                                                        {
+                                                                            "tipo": "termino",
+                                                                            "hijos": [
+                                                                                {
+                                                                                    "tipo": "factor",
+                                                                                    "hijos": [
+                                                                                        {
+                                                                                            "tipo": "componente",
+                                                                                            "hijos": [
+                                                                                                {
+                                                                                                    "tipo": "id",
+                                                                                                    "valor": "x"
+                                                                                                }
+                                                                                            ]
+                                                                                        }
+                                                                                    ]
+                                                                                }
+                                                                            ]
+                                                                        }
+                                                                    ]
+                                                                }
+                                                            ]
+                                                        }
+                                                    ]
+                                                },
+                                                {
+                                                    "tipo": "simbolo",
+                                                    "valor": ";"
+                                                }
+                                            ]
+                                        }
+                                    ]
+                                },
+                                {
+                                    "tipo": "simbolo",
+                                    "valor": "}"
+                                }
+                            ]
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "tipo": "simbolo",
+            "valor": "}"
+        }
+    ]
+}

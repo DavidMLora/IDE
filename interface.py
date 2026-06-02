@@ -1041,6 +1041,13 @@ class MainWindow(QMainWindow):
 
     def ejecutar_programa(self):
         if self.obtener_codigo() is None: return
+        
+        self.status_bar.showMessage("Compilando todo el proyecto...", 3000)
+        self.ejecutar_lexico()
+        self.ejecutar_sintactico()
+        self.ejecutar_semantico()
+        self.ejecutar_codigo_intermedio()
+        
         self.restaurar_panel_inferior() 
         self.status_bar.showMessage("Ejecutando Programa...", 3000)
         simulacion = ">> EJECUCIÓN INICIADA...\n\nHola Mundo!\n\n>> Proceso terminado con código de salida 0."

@@ -1,6 +1,0 @@
-REPORTE DE ERRORES SINTACTICOS
---------------------------------------------------
-Error Sintactico: Se esperaba ; pero se encontro 'float' (RESERVADA) | Fila: 3 | Col: 5
-Error Sintactico: Se esperaba (, numero, identificador u operador logico | Fila: 11 | Col: 5
-Error Sintactico: Se esperaba ; pero se encontro '}' (SIMBOLO) | Fila: 12 | Col: 1
-Error Sintactico: Se esperaba } pero se alcanzo el fin de archivo
