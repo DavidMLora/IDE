@@ -385,9 +385,9 @@ class MainWindow(QMainWindow):
         self.v_splitter.addWidget(self.panel_inferior)
 
         self.h_splitter.setStretchFactor(0, 1)
-        self.h_splitter.setStretchFactor(1, 4)
-        self.h_splitter.setStretchFactor(2, 1)
-        self.v_splitter.setStretchFactor(0, 3)
+        self.h_splitter.setStretchFactor(1, 3)
+        self.h_splitter.setStretchFactor(2, 2)
+        self.v_splitter.setStretchFactor(0, 2)
         self.v_splitter.setStretchFactor(1, 1)
         self.setCentralWidget(self.v_splitter)
 
@@ -501,10 +501,10 @@ class MainWindow(QMainWindow):
         sizes = self.h_splitter.sizes()
         if len(sizes) >= 3 and sizes[2] == 0:
             total = sum(sizes) or self.width()
-            self.h_splitter.setSizes([int(total * 0.15), int(total * 0.7), int(total * 0.15)])
+            self.h_splitter.setSizes([int(total * 0.12), int(total * 0.55), int(total * 0.33)])
         elif len(sizes) == 2 and sizes[1] == 0:
             total = sum(sizes) or self.width()
-            self.h_splitter.setSizes([int(total * 0.7), int(total * 0.3)])
+            self.h_splitter.setSizes([int(total * 0.6), int(total * 0.4)])
 
     def restaurar_panel_inferior(self):
         if getattr(self, 'win_inferior', None):
@@ -516,7 +516,7 @@ class MainWindow(QMainWindow):
         sizes = self.v_splitter.sizes()
         if sizes[1] == 0:  
             total = sum(sizes) or self.height()
-            self.v_splitter.setSizes([int(total * 0.75), int(total * 0.25)])
+            self.v_splitter.setSizes([int(total * 0.60), int(total * 0.40)])
 
     def close_panel_derecho(self):
         if getattr(self, 'win_derecho', None):
