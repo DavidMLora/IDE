@@ -27,7 +27,6 @@ def leer_tokens(ruta_archivo):
                     fila = partes[2].split(':', 1)[1].strip()
                     col = partes[3].split(':', 1)[1].strip()
                     
-                    # Restaurar saltos de linea sanitizados
                     lexema = lexema.replace('\\n', '\n')
                     tokens.append(Token(tipo, lexema, fila, col))
     except Exception as e:
@@ -36,7 +35,7 @@ def leer_tokens(ruta_archivo):
 
 class Parser:
     def __init__(self, tokens):
-        self.tokens = [t for t in tokens if t.tipo != 'COMENTARIO'] # Ignoramos los comentarios en sintáctico
+        self.tokens = [t for t in tokens if t.tipo != 'COMENTARIO'] 
         self.pos = 0
         self.errores = []
     
@@ -59,7 +58,6 @@ class Parser:
             return tok
             
         self.error(f"Se esperaba {lexema_esperado or tipo_esperado} pero se encontro '{tok.lexema}' ({tok.tipo})", tok)
-        # Sincronización simple (panic mode)
         return None
 
     def error(self, mensaje, tok=None):
@@ -251,39 +249,47 @@ class Parser:
         nodo = {"tipo": "seleccion", "hijos": []}
         
         self.match("RESERVADA", "if")
-        nodo["hijos"].append({"tipo": "keyword", "valor": "if"})
+        nodo["hijos"].append({"tipo": "palabra_clave", "valor": "if"})
         
         expr = self.expresion()
         if expr: nodo["hijos"].append(expr)
         
-        # Soportamos 'then' (como ID o Reservada) o '{'
         if self.actual() and self.actual().lexema in ["then", "{"]:
             val = self.actual().lexema
             self.avanzar()
-            nodo["hijos"].append({"tipo": "simbolo", "valor": val})
+            nodo_then = {"tipo": "palabra_clave", "valor": val, "hijos": []}
             
-        lista1 = self.lista_sentencias()
-        if lista1: nodo["hijos"].append(lista1)
-        
+            lista1 = self.lista_sentencias()
+            if lista1 and "hijos" in lista1:
+                nodo_then["hijos"] = lista1["hijos"] 
+            elif lista1:
+                nodo_then["hijos"].append(lista1)
+                
+            nodo["hijos"].append(nodo_then)
+        else:
+            lista1 = self.lista_sentencias()
+            if lista1: nodo["hijos"].append(lista1)
+
         if self.actual() and self.actual().lexema == "else":
             self.match("RESERVADA", "else")
-            nodo_else = {"tipo": "else", "hijos": []}
-            nodo_else["hijos"].append({"tipo": "keyword", "valor": "else"})
+            nodo_else = {"tipo": "palabra_clave", "valor": "else", "hijos": []}
             
             if self.actual() and self.actual().lexema == "{":
-                self.avanzar()
-                nodo_else["hijos"].append({"tipo": "simbolo", "valor": "{"})
+                self.avanzar() 
                 
             lista2 = self.lista_sentencias()
-            if lista2: nodo_else["hijos"].append(lista2)
-            
+            if lista2 and "hijos" in lista2:
+                nodo_else["hijos"] = lista2["hijos"]
+            elif lista2:
+                nodo_else["hijos"].append(lista2)
+                
             nodo["hijos"].append(nodo_else)
             
         if self.actual() and self.actual().lexema in ["end", "}"]:
             val = self.actual().lexema
             self.avanzar()
-            nodo["hijos"].append({"tipo": "simbolo", "valor": val})
-            # Consumir ';' opcional despues de end/}
+            nodo["hijos"].append({"tipo": "palabra_clave", "valor": val})
+            
             if self.actual() and self.actual().lexema == ";":
                 self.avanzar()
                 nodo["hijos"].append({"tipo": "simbolo", "valor": ";"})
@@ -294,23 +300,30 @@ class Parser:
         nodo = {"tipo": "iteracion", "hijos": []}
         
         self.match("RESERVADA", "while")
-        nodo["hijos"].append({"tipo": "keyword", "valor": "while"})
+        nodo["hijos"].append({"tipo": "palabra_clave", "valor": "while"})
         
         expr = self.expresion()
         if expr: nodo["hijos"].append(expr)
         
         if self.actual() and self.actual().lexema == "{":
+            val = self.actual().lexema
             self.avanzar()
-            nodo["hijos"].append({"tipo": "simbolo", "valor": "{"})
+            nodo_llave = {"tipo": "palabra_clave", "valor": val, "hijos": []}
             
-        lista = self.lista_sentencias()
-        if lista: nodo["hijos"].append(lista)
-        
+            lista = self.lista_sentencias()
+            if lista and "hijos" in lista:
+                nodo_llave["hijos"] = lista["hijos"]
+                
+            nodo["hijos"].append(nodo_llave)
+        else:
+            lista = self.lista_sentencias()
+            if lista: nodo["hijos"].append(lista)
+            
         if self.actual() and self.actual().lexema in ["end", "}"]:
             val = self.actual().lexema
             self.avanzar()
-            nodo["hijos"].append({"tipo": "simbolo", "valor": val})
-            # Consumir ';' opcional despues de end/}
+            nodo["hijos"].append({"tipo": "palabra_clave", "valor": val})
+            
             if self.actual() and self.actual().lexema == ";":
                 self.avanzar()
                 nodo["hijos"].append({"tipo": "simbolo", "valor": ";"})
@@ -321,21 +334,22 @@ class Parser:
         nodo = {"tipo": "repeticion", "hijos": []}
         
         self.match("RESERVADA", "do")
-        nodo["hijos"].append({"tipo": "keyword", "valor": "do"})
+        nodo_do = {"tipo": "palabra_clave", "valor": "do", "hijos": []}
         
         if self.actual() and self.actual().lexema == "{":
-            self.avanzar()
-            nodo["hijos"].append({"tipo": "simbolo", "valor": "{"})
+            self.avanzar() 
             
         lista = self.lista_sentencias()
-        if lista: nodo["hijos"].append(lista)
+        if lista and "hijos" in lista:
+            nodo_do["hijos"] = lista["hijos"]
+            
+        nodo["hijos"].append(nodo_do)
         
         if self.actual() and self.actual().lexema == "}":
-            self.avanzar()
-            nodo["hijos"].append({"tipo": "simbolo", "valor": "}"})
+            self.avanzar() 
             
         self.match("RESERVADA", "while")
-        nodo["hijos"].append({"tipo": "keyword", "valor": "while"})
+        nodo["hijos"].append({"tipo": "palabra_clave", "valor": "while"})
         
         expr = self.expresion()
         if expr: nodo["hijos"].append(expr)
@@ -536,7 +550,6 @@ class Parser:
 def convertir_a_ast(nodo):
     if not isinstance(nodo, dict): return nodo
     
-    # Si es hoja
     if "hijos" not in nodo:
         if nodo.get("tipo") in ["simbolo", "keyword"]:
             return None
@@ -548,7 +561,6 @@ def convertir_a_ast(nodo):
         if h_limpio is not None:
             hijos_limpios.append(h_limpio)
             
-    # Simplificar nodos "cascarón" de la gramática (que solo tienen un hijo y sirven de paso intermedio)
     nodos_intermedios = [
         "sent_expresion", "expresion", "comparacion", "expresion_simple", 
         "termino", "factor", "componente", "lista_sentencias_wrapper"
@@ -557,7 +569,46 @@ def convertir_a_ast(nodo):
     if nodo["tipo"] in nodos_intermedios and len(hijos_limpios) == 1:
         return hijos_limpios[0]
 
-    # Asignación: ID = EXPR -> raíz es el operador =
+    # Convertimos: declaracion_variable -> [tipo_dato, identificadores]
+    # En: declaracion_variable(valor=tipo) -> [id1, id2, id3]
+    if nodo["tipo"] == "declaracion_variable":
+        tipo_var = ""
+        hijos_id = []
+        for h in hijos_limpios:
+            if h.get("tipo") == "tipo_dato":
+                tipo_var = h.get("valor")
+            elif h.get("tipo") == "identificadores" and "hijos" in h:
+                hijos_id.extend(h["hijos"])
+                
+        return {
+            "tipo": "declaracion_variable",
+            "valor": tipo_var,
+            "hijos": hijos_id
+        }
+
+    # --- NUEVA REGLA PARA SIMPLIFICAR LAS ESTRUCTURAS DE CONTROL ---
+    # Convertimos: seleccion -> [if, condicion, then, else, end]
+    # En: seleccion(valor="if") -> [condicion, then, else, end]
+    if nodo["tipo"] in ["seleccion", "iteracion", "repeticion"]:
+        palabra_principal = ""
+        if nodo["tipo"] == "seleccion": palabra_principal = "if"
+        elif nodo["tipo"] == "iteracion": palabra_principal = "while"
+        elif nodo["tipo"] == "repeticion": palabra_principal = "do"
+        
+        hijos_control = []
+        for h in hijos_limpios:
+            # Omitimos la palabra clave principal de los hijos, ya que será el valor del nodo padre
+            if h.get("tipo") == "palabra_clave" and h.get("valor") == palabra_principal:
+                continue
+            hijos_control.append(h)
+            
+        return {
+            "tipo": nodo["tipo"],
+            "valor": palabra_principal,
+            "hijos": hijos_control
+        }
+    # ---------------------------------------------------------------
+
     if nodo["tipo"] == "asignacion" and len(hijos_limpios) == 3:
         if hijos_limpios[1].get("tipo") == "operador" and hijos_limpios[1].get("valor") == "=":
             return {
@@ -566,11 +617,10 @@ def convertir_a_ast(nodo):
                 "hijos": [hijos_limpios[0], hijos_limpios[2]]
             }
 
-    # Procesar expresiones binarias (izq a der)
-    # Convierte [expr, op, expr, op, expr] en un árbol con los operadores como raíz
     operadores_tipos = ["suma_op", "mult_op", "pot_op", "op_relacional", "op_logico", "operador"]
     
-    if nodo["tipo"] not in ["incremento", "decremento"] and len(hijos_limpios) >= 3 and len(hijos_limpios) % 2 == 1:
+    # Agregamos "palabra_clave" a la lista de ignorados
+    if nodo["tipo"] not in ["incremento", "decremento", "seleccion", "iteracion", "repeticion", "else", "palabra_clave"] and len(hijos_limpios) >= 3 and len(hijos_limpios) % 2 == 1:
         is_expr = True
         for i, h in enumerate(hijos_limpios):
             if i % 2 == 1:
@@ -607,13 +657,10 @@ def generar_archivos_ast(ruta_tokens, tokens):
     directorio = os.path.dirname(ruta_tokens)
     nombre_base = os.path.basename(ruta_tokens).replace('_tokens.txt', '')
     
-    # El CST (Sintáctico) es el árbol base tal cual salió del parser
     ruta_cst = os.path.join(directorio, f"{nombre_base}_cst.json")
-    
-    # El AST (Semántico) es el árbol simplificado (limpio de símbolos y nodos intermedios)
     ruta_ast = os.path.join(directorio, f"{nombre_base}_ast.json")
-    ast_semantico = convertir_a_ast(arbol_base) if arbol_base else None
     
+    ast_semantico = convertir_a_ast(arbol_base) if arbol_base else None
     ruta_errores = os.path.join(directorio, f"{nombre_base}_errores_sintacticos.txt")
     
     if ast_semantico:
