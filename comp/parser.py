@@ -492,19 +492,96 @@ class Parser:
         self.avanzar()
         return None
 
+def convertir_a_ast(nodo):
+    if not isinstance(nodo, dict): return nodo
+    
+    # Si es hoja
+    if "hijos" not in nodo:
+        if nodo.get("tipo") in ["simbolo", "keyword"]:
+            return None
+        return nodo
+        
+    hijos_limpios = []
+    for h in nodo["hijos"]:
+        h_limpio = convertir_a_ast(h)
+        if h_limpio is not None:
+            hijos_limpios.append(h_limpio)
+            
+    # Simplificar nodos "cascarón" de la gramática (que solo tienen un hijo y sirven de paso intermedio)
+    nodos_intermedios = [
+        "sent_expresion", "expresion", "expresion_simple", 
+        "termino", "factor", "componente", "lista_sentencias_wrapper"
+    ]
+    
+    if nodo["tipo"] in nodos_intermedios and len(hijos_limpios) == 1:
+        return hijos_limpios[0]
+
+    # Asignación: ID = EXPR -> raíz es el operador =
+    if nodo["tipo"] == "asignacion" and len(hijos_limpios) == 3:
+        if hijos_limpios[1].get("tipo") == "operador" and hijos_limpios[1].get("valor") == "=":
+            return {
+                "tipo": "operador",
+                "valor": "=",
+                "hijos": [hijos_limpios[0], hijos_limpios[2]]
+            }
+
+    # Procesar expresiones binarias (izq a der)
+    # Convierte [expr, op, expr, op, expr] en un árbol con los operadores como raíz
+    operadores_tipos = ["suma_op", "mult_op", "pot_op", "op_relacional", "op_logico", "operador"]
+    
+    if len(hijos_limpios) >= 3 and len(hijos_limpios) % 2 == 1:
+        is_expr = True
+        for i, h in enumerate(hijos_limpios):
+            if i % 2 == 1:
+                if h.get("tipo") not in operadores_tipos:
+                    is_expr = False
+                    break
+                    
+        if is_expr:
+            raiz = hijos_limpios[0]
+            for i in range(1, len(hijos_limpios), 2):
+                op = hijos_limpios[i]
+                der = hijos_limpios[i+1]
+                raiz = {
+                    "tipo": op.get("tipo", "operador"),
+                    "valor": op.get("valor", ""),
+                    "hijos": [raiz, der]
+                }
+            return raiz
+            
+    if len(hijos_limpios) == 0 and nodo["tipo"] not in ["id", "numero", "cadena", "booleano", "operador"]:
+        return None
+        
+    nuevo = {"tipo": nodo["tipo"]}
+    if "valor" in nodo: nuevo["valor"] = nodo["valor"]
+    nuevo["hijos"] = hijos_limpios
+    
+    return nuevo
+
 def generar_archivos_ast(ruta_tokens, tokens):
     parser = Parser(tokens)
-    ast = parser.parse()
+    arbol_base = parser.parse()
     errores_sintacticos = parser.errores
     
     directorio = os.path.dirname(ruta_tokens)
     nombre_base = os.path.basename(ruta_tokens).replace('_tokens.txt', '')
     
+    # El CST (Sintáctico) es el árbol base tal cual salió del parser
+    ruta_cst = os.path.join(directorio, f"{nombre_base}_cst.json")
+    
+    # El AST (Semántico) es el árbol simplificado (limpio de símbolos y nodos intermedios)
     ruta_ast = os.path.join(directorio, f"{nombre_base}_ast.json")
+    ast_semantico = convertir_a_ast(arbol_base) if arbol_base else None
+    
     ruta_errores = os.path.join(directorio, f"{nombre_base}_errores_sintacticos.txt")
     
-    with open(ruta_ast, 'w', encoding='utf-8') as f:
-        json.dump(ast, f, indent=4)
+    if ast_semantico:
+        with open(ruta_ast, 'w', encoding='utf-8') as f:
+            json.dump(ast_semantico, f, indent=4)
+            
+    if arbol_base:
+        with open(ruta_cst, 'w', encoding='utf-8') as f:
+            json.dump(arbol_base, f, indent=4)
         
     with open(ruta_errores, 'w', encoding='utf-8') as f:
         f.write("REPORTE DE ERRORES SINTACTICOS\n")
@@ -515,7 +592,7 @@ def generar_archivos_ast(ruta_tokens, tokens):
             for err in errores_sintacticos:
                 f.write(err + "\n")
                 
-    return ruta_ast, ruta_errores
+    return ruta_ast, ruta_cst, ruta_errores
 
 if __name__ == '__main__':
     parser_arg = argparse.ArgumentParser(description="Analizador Sintactico")
@@ -527,7 +604,7 @@ if __name__ == '__main__':
         print("No se encontraron tokens o el archivo esta vacio.", file=sys.stderr)
         sys.exit(1)
         
-    ruta_ast, ruta_errores = generar_archivos_ast(args.archivo_tokens, tokens)
+    ruta_ast, ruta_cst, ruta_errores = generar_archivos_ast(args.archivo_tokens, tokens)
     
-    print(f">> Archivos generados: {os.path.basename(ruta_ast)} y {os.path.basename(ruta_errores)}")
+    print(f">> Archivos generados: {os.path.basename(ruta_ast)}, {os.path.basename(ruta_cst)} y {os.path.basename(ruta_errores)}")
     sys.exit(0)

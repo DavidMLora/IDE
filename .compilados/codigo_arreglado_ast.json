@@ -1,0 +1,850 @@
+{
+    "tipo": "programa",
+    "hijos": [
+        {
+            "tipo": "lista_declaracion",
+            "hijos": [
+                {
+                    "tipo": "declaracion_variable",
+                    "hijos": [
+                        {
+                            "tipo": "tipo_dato",
+                            "valor": "int"
+                        },
+                        {
+                            "tipo": "identificadores",
+                            "hijos": [
+                                {
+                                    "tipo": "id",
+                                    "valor": "x"
+                                },
+                                {
+                                    "tipo": "id",
+                                    "valor": "y"
+                                },
+                                {
+                                    "tipo": "id",
+                                    "valor": "z"
+                                }
+                            ]
+                        }
+                    ]
+                },
+                {
+                    "tipo": "declaracion_variable",
+                    "hijos": [
+                        {
+                            "tipo": "tipo_dato",
+                            "valor": "float"
+                        },
+                        {
+                            "tipo": "identificadores",
+                            "hijos": [
+                                {
+                                    "tipo": "id",
+                                    "valor": "a"
+                                },
+                                {
+                                    "tipo": "id",
+                                    "valor": "b"
+                                },
+                                {
+                                    "tipo": "id",
+                                    "valor": "c"
+                                }
+                            ]
+                        }
+                    ]
+                },
+                {
+                    "tipo": "lista_sentencias",
+                    "hijos": [
+                        {
+                            "tipo": "operador",
+                            "valor": "=",
+                            "hijos": [
+                                {
+                                    "tipo": "id",
+                                    "valor": "suma"
+                                },
+                                {
+                                    "tipo": "numero",
+                                    "valor": "45"
+                                }
+                            ]
+                        },
+                        {
+                            "tipo": "operador",
+                            "valor": "=",
+                            "hijos": [
+                                {
+                                    "tipo": "id",
+                                    "valor": "x"
+                                },
+                                {
+                                    "tipo": "numero",
+                                    "valor": "32.32"
+                                }
+                            ]
+                        },
+                        {
+                            "tipo": "operador",
+                            "valor": "=",
+                            "hijos": [
+                                {
+                                    "tipo": "id",
+                                    "valor": "x"
+                                },
+                                {
+                                    "tipo": "numero",
+                                    "valor": "23"
+                                }
+                            ]
+                        },
+                        {
+                            "tipo": "operador",
+                            "valor": "=",
+                            "hijos": [
+                                {
+                                    "tipo": "id",
+                                    "valor": "y"
+                                },
+                                {
+                                    "tipo": "suma_op",
+                                    "valor": "-",
+                                    "hijos": [
+                                        {
+                                            "tipo": "suma_op",
+                                            "valor": "+",
+                                            "hijos": [
+                                                {
+                                                    "tipo": "numero",
+                                                    "valor": "2"
+                                                },
+                                                {
+                                                    "tipo": "numero",
+                                                    "valor": "3"
+                                                }
+                                            ]
+                                        },
+                                        {
+                                            "tipo": "numero",
+                                            "valor": "1"
+                                        }
+                                    ]
+                                }
+                            ]
+                        },
+                        {
+                            "tipo": "operador",
+                            "valor": "=",
+                            "hijos": [
+                                {
+                                    "tipo": "id",
+                                    "valor": "z"
+                                },
+                                {
+                                    "tipo": "suma_op",
+                                    "valor": "+",
+                                    "hijos": [
+                                        {
+                                            "tipo": "id",
+                                            "valor": "y"
+                                        },
+                                        {
+                                            "tipo": "numero",
+                                            "valor": "7"
+                                        }
+                                    ]
+                                }
+                            ]
+                        },
+                        {
+                            "tipo": "operador",
+                            "valor": "=",
+                            "hijos": [
+                                {
+                                    "tipo": "id",
+                                    "valor": "y"
+                                },
+                                {
+                                    "tipo": "suma_op",
+                                    "valor": "+",
+                                    "hijos": [
+                                        {
+                                            "tipo": "id",
+                                            "valor": "y"
+                                        },
+                                        {
+                                            "tipo": "numero",
+                                            "valor": "1"
+                                        }
+                                    ]
+                                }
+                            ]
+                        },
+                        {
+                            "tipo": "operador",
+                            "valor": "=",
+                            "hijos": [
+                                {
+                                    "tipo": "id",
+                                    "valor": "a"
+                                },
+                                {
+                                    "tipo": "suma_op",
+                                    "valor": "-",
+                                    "hijos": [
+                                        {
+                                            "tipo": "suma_op",
+                                            "valor": "+",
+                                            "hijos": [
+                                                {
+                                                    "tipo": "suma_op",
+                                                    "valor": "-",
+                                                    "hijos": [
+                                                        {
+                                                            "tipo": "suma_op",
+                                                            "valor": "+",
+                                                            "hijos": [
+                                                                {
+                                                                    "tipo": "numero",
+                                                                    "valor": "24.0"
+                                                                },
+                                                                {
+                                                                    "tipo": "numero",
+                                                                    "valor": "4"
+                                                                }
+                                                            ]
+                                                        },
+                                                        {
+                                                            "tipo": "mult_op",
+                                                            "valor": "*",
+                                                            "hijos": [
+                                                                {
+                                                                    "tipo": "mult_op",
+                                                                    "valor": "/",
+                                                                    "hijos": [
+                                                                        {
+                                                                            "tipo": "numero",
+                                                                            "valor": "1"
+                                                                        },
+                                                                        {
+                                                                            "tipo": "numero",
+                                                                            "valor": "3"
+                                                                        }
+                                                                    ]
+                                                                },
+                                                                {
+                                                                    "tipo": "numero",
+                                                                    "valor": "2"
+                                                                }
+                                                            ]
+                                                        }
+                                                    ]
+                                                },
+                                                {
+                                                    "tipo": "numero",
+                                                    "valor": "34"
+                                                }
+                                            ]
+                                        },
+                                        {
+                                            "tipo": "numero",
+                                            "valor": "1"
+                                        }
+                                    ]
+                                }
+                            ]
+                        },
+                        {
+                            "tipo": "operador",
+                            "valor": "=",
+                            "hijos": [
+                                {
+                                    "tipo": "id",
+                                    "valor": "x"
+                                },
+                                {
+                                    "tipo": "mult_op",
+                                    "valor": "*",
+                                    "hijos": [
+                                        {
+                                            "tipo": "suma_op",
+                                            "valor": "-",
+                                            "hijos": [
+                                                {
+                                                    "tipo": "numero",
+                                                    "valor": "5"
+                                                },
+                                                {
+                                                    "tipo": "numero",
+                                                    "valor": "3"
+                                                }
+                                            ]
+                                        },
+                                        {
+                                            "tipo": "mult_op",
+                                            "valor": "/",
+                                            "hijos": [
+                                                {
+                                                    "tipo": "numero",
+                                                    "valor": "8"
+                                                },
+                                                {
+                                                    "tipo": "numero",
+                                                    "valor": "2"
+                                                }
+                                            ]
+                                        }
+                                    ]
+                                }
+                            ]
+                        },
+                        {
+                            "tipo": "operador",
+                            "valor": "=",
+                            "hijos": [
+                                {
+                                    "tipo": "id",
+                                    "valor": "y"
+                                },
+                                {
+                                    "tipo": "suma_op",
+                                    "valor": "-",
+                                    "hijos": [
+                                        {
+                                            "tipo": "suma_op",
+                                            "valor": "-",
+                                            "hijos": [
+                                                {
+                                                    "tipo": "suma_op",
+                                                    "valor": "+",
+                                                    "hijos": [
+                                                        {
+                                                            "tipo": "numero",
+                                                            "valor": "5"
+                                                        },
+                                                        {
+                                                            "tipo": "numero",
+                                                            "valor": "3"
+                                                        }
+                                                    ]
+                                                },
+                                                {
+                                                    "tipo": "mult_op",
+                                                    "valor": "/",
+                                                    "hijos": [
+                                                        {
+                                                            "tipo": "mult_op",
+                                                            "valor": "*",
+                                                            "hijos": [
+                                                                {
+                                                                    "tipo": "numero",
+                                                                    "valor": "2"
+                                                                },
+                                                                {
+                                                                    "tipo": "numero",
+                                                                    "valor": "4"
+                                                                }
+                                                            ]
+                                                        },
+                                                        {
+                                                            "tipo": "numero",
+                                                            "valor": "7"
+                                                        }
+                                                    ]
+                                                }
+                                            ]
+                                        },
+                                        {
+                                            "tipo": "numero",
+                                            "valor": "9"
+                                        }
+                                    ]
+                                }
+                            ]
+                        },
+                        {
+                            "tipo": "operador",
+                            "valor": "=",
+                            "hijos": [
+                                {
+                                    "tipo": "id",
+                                    "valor": "z"
+                                },
+                                {
+                                    "tipo": "suma_op",
+                                    "valor": "+",
+                                    "hijos": [
+                                        {
+                                            "tipo": "mult_op",
+                                            "valor": "/",
+                                            "hijos": [
+                                                {
+                                                    "tipo": "numero",
+                                                    "valor": "8"
+                                                },
+                                                {
+                                                    "tipo": "numero",
+                                                    "valor": "2"
+                                                }
+                                            ]
+                                        },
+                                        {
+                                            "tipo": "mult_op",
+                                            "valor": "*",
+                                            "hijos": [
+                                                {
+                                                    "tipo": "numero",
+                                                    "valor": "15"
+                                                },
+                                                {
+                                                    "tipo": "numero",
+                                                    "valor": "4"
+                                                }
+                                            ]
+                                        }
+                                    ]
+                                }
+                            ]
+                        },
+                        {
+                            "tipo": "operador",
+                            "valor": "=",
+                            "hijos": [
+                                {
+                                    "tipo": "id",
+                                    "valor": "y"
+                                },
+                                {
+                                    "tipo": "numero",
+                                    "valor": "14.54"
+                                }
+                            ]
+                        },
+                        {
+                            "tipo": "seleccion",
+                            "hijos": [
+                                {
+                                    "tipo": "op_relacional",
+                                    "valor": ">",
+                                    "hijos": [
+                                        {
+                                            "tipo": "numero",
+                                            "valor": "2"
+                                        },
+                                        {
+                                            "tipo": "numero",
+                                            "valor": "3"
+                                        }
+                                    ]
+                                },
+                                {
+                                    "tipo": "lista_sentencias",
+                                    "hijos": [
+                                        {
+                                            "tipo": "operador",
+                                            "valor": "=",
+                                            "hijos": [
+                                                {
+                                                    "tipo": "id",
+                                                    "valor": "y"
+                                                },
+                                                {
+                                                    "tipo": "suma_op",
+                                                    "valor": "+",
+                                                    "hijos": [
+                                                        {
+                                                            "tipo": "id",
+                                                            "valor": "a"
+                                                        },
+                                                        {
+                                                            "tipo": "numero",
+                                                            "valor": "3"
+                                                        }
+                                                    ]
+                                                }
+                                            ]
+                                        }
+                                    ]
+                                },
+                                {
+                                    "tipo": "lista_sentencias",
+                                    "hijos": [
+                                        {
+                                            "tipo": "seleccion",
+                                            "hijos": [
+                                                {
+                                                    "tipo": "op_relacional",
+                                                    "valor": ">",
+                                                    "hijos": [
+                                                        {
+                                                            "tipo": "numero",
+                                                            "valor": "4"
+                                                        },
+                                                        {
+                                                            "tipo": "numero",
+                                                            "valor": "2"
+                                                        }
+                                                    ]
+                                                }
+                                            ]
+                                        }
+                                    ]
+                                }
+                            ]
+                        }
+                    ]
+                },
+                {
+                    "tipo": "lista_sentencias",
+                    "hijos": [
+                        {
+                            "tipo": "asignacion",
+                            "hijos": [
+                                {
+                                    "tipo": "id",
+                                    "valor": "then"
+                                },
+                                {
+                                    "tipo": "id",
+                                    "valor": "b"
+                                }
+                            ]
+                        }
+                    ]
+                },
+                {
+                    "tipo": "lista_sentencias",
+                    "hijos": [
+                        {
+                            "tipo": "operador",
+                            "valor": "=",
+                            "hijos": [
+                                {
+                                    "tipo": "id",
+                                    "valor": "b"
+                                },
+                                {
+                                    "tipo": "numero",
+                                    "valor": "5.0"
+                                }
+                            ]
+                        }
+                    ]
+                },
+                {
+                    "tipo": "lista_sentencias",
+                    "hijos": [
+                        {
+                            "tipo": "operador",
+                            "valor": "=",
+                            "hijos": [
+                                {
+                                    "tipo": "id",
+                                    "valor": "y"
+                                },
+                                {
+                                    "tipo": "suma_op",
+                                    "valor": "+",
+                                    "hijos": [
+                                        {
+                                            "tipo": "id",
+                                            "valor": "y"
+                                        },
+                                        {
+                                            "tipo": "numero",
+                                            "valor": "1"
+                                        }
+                                    ]
+                                }
+                            ]
+                        }
+                    ]
+                },
+                {
+                    "tipo": "lista_sentencias",
+                    "hijos": [
+                        {
+                            "tipo": "asignacion",
+                            "hijos": [
+                                {
+                                    "tipo": "id",
+                                    "valor": "a"
+                                },
+                                {
+                                    "tipo": "suma_op",
+                                    "valor": "+"
+                                }
+                            ]
+                        },
+                        {
+                            "tipo": "asignacion",
+                            "hijos": [
+                                {
+                                    "tipo": "id",
+                                    "valor": "c"
+                                }
+                            ]
+                        },
+                        {
+                            "tipo": "operador",
+                            "valor": "=",
+                            "hijos": [
+                                {
+                                    "tipo": "id",
+                                    "valor": "x"
+                                },
+                                {
+                                    "tipo": "suma_op",
+                                    "valor": "+",
+                                    "hijos": [
+                                        {
+                                            "tipo": "numero",
+                                            "valor": "3"
+                                        },
+                                        {
+                                            "tipo": "numero",
+                                            "valor": "4"
+                                        }
+                                    ]
+                                }
+                            ]
+                        },
+                        {
+                            "tipo": "repeticion",
+                            "hijos": [
+                                {
+                                    "tipo": "lista_sentencias",
+                                    "hijos": [
+                                        {
+                                            "tipo": "operador",
+                                            "valor": "=",
+                                            "hijos": [
+                                                {
+                                                    "tipo": "id",
+                                                    "valor": "y"
+                                                },
+                                                {
+                                                    "tipo": "suma_op",
+                                                    "valor": "+",
+                                                    "hijos": [
+                                                        {
+                                                            "tipo": "mult_op",
+                                                            "valor": "*",
+                                                            "hijos": [
+                                                                {
+                                                                    "tipo": "suma_op",
+                                                                    "valor": "+",
+                                                                    "hijos": [
+                                                                        {
+                                                                            "tipo": "id",
+                                                                            "valor": "y"
+                                                                        },
+                                                                        {
+                                                                            "tipo": "numero",
+                                                                            "valor": "1"
+                                                                        }
+                                                                    ]
+                                                                },
+                                                                {
+                                                                    "tipo": "numero",
+                                                                    "valor": "2"
+                                                                }
+                                                            ]
+                                                        },
+                                                        {
+                                                            "tipo": "numero",
+                                                            "valor": "1"
+                                                        }
+                                                    ]
+                                                }
+                                            ]
+                                        },
+                                        {
+                                            "tipo": "iteracion",
+                                            "hijos": [
+                                                {
+                                                    "tipo": "op_relacional",
+                                                    "valor": ">",
+                                                    "hijos": [
+                                                        {
+                                                            "tipo": "id",
+                                                            "valor": "x"
+                                                        },
+                                                        {
+                                                            "tipo": "numero",
+                                                            "valor": "7"
+                                                        }
+                                                    ]
+                                                },
+                                                {
+                                                    "tipo": "lista_sentencias",
+                                                    "hijos": [
+                                                        {
+                                                            "tipo": "operador",
+                                                            "valor": "=",
+                                                            "hijos": [
+                                                                {
+                                                                    "tipo": "id",
+                                                                    "valor": "x"
+                                                                },
+                                                                {
+                                                                    "tipo": "suma_op",
+                                                                    "valor": "+",
+                                                                    "hijos": [
+                                                                        {
+                                                                            "tipo": "numero",
+                                                                            "valor": "6"
+                                                                        },
+                                                                        {
+                                                                            "tipo": "mult_op",
+                                                                            "valor": "/",
+                                                                            "hijos": [
+                                                                                {
+                                                                                    "tipo": "mult_op",
+                                                                                    "valor": "*",
+                                                                                    "hijos": [
+                                                                                        {
+                                                                                            "tipo": "mult_op",
+                                                                                            "valor": "/",
+                                                                                            "hijos": [
+                                                                                                {
+                                                                                                    "tipo": "numero",
+                                                                                                    "valor": "8"
+                                                                                                },
+                                                                                                {
+                                                                                                    "tipo": "numero",
+                                                                                                    "valor": "9"
+                                                                                                }
+                                                                                            ]
+                                                                                        },
+                                                                                        {
+                                                                                            "tipo": "numero",
+                                                                                            "valor": "8"
+                                                                                        }
+                                                                                    ]
+                                                                                },
+                                                                                {
+                                                                                    "tipo": "numero",
+                                                                                    "valor": "3"
+                                                                                }
+                                                                            ]
+                                                                        }
+                                                                    ]
+                                                                }
+                                                            ]
+                                                        },
+                                                        {
+                                                            "tipo": "sent_in",
+                                                            "hijos": [
+                                                                {
+                                                                    "tipo": "id",
+                                                                    "valor": "x"
+                                                                }
+                                                            ]
+                                                        },
+                                                        {
+                                                            "tipo": "operador",
+                                                            "valor": "=",
+                                                            "hijos": [
+                                                                {
+                                                                    "tipo": "id",
+                                                                    "valor": "mas"
+                                                                },
+                                                                {
+                                                                    "tipo": "mult_op",
+                                                                    "valor": "/",
+                                                                    "hijos": [
+                                                                        {
+                                                                            "tipo": "numero",
+                                                                            "valor": "36"
+                                                                        },
+                                                                        {
+                                                                            "tipo": "numero",
+                                                                            "valor": "7"
+                                                                        }
+                                                                    ]
+                                                                }
+                                                            ]
+                                                        }
+                                                    ]
+                                                }
+                                            ]
+                                        }
+                                    ]
+                                }
+                            ]
+                        },
+                        {
+                            "tipo": "asignacion",
+                            "hijos": [
+                                {
+                                    "tipo": "id",
+                                    "valor": "until"
+                                },
+                                {
+                                    "tipo": "id",
+                                    "valor": "y"
+                                }
+                            ]
+                        }
+                    ]
+                },
+                {
+                    "tipo": "lista_sentencias",
+                    "hijos": [
+                        {
+                            "tipo": "iteracion",
+                            "hijos": [
+                                {
+                                    "tipo": "op_relacional",
+                                    "valor": "==",
+                                    "hijos": [
+                                        {
+                                            "tipo": "id",
+                                            "valor": "y"
+                                        },
+                                        {
+                                            "tipo": "numero",
+                                            "valor": "0"
+                                        }
+                                    ]
+                                },
+                                {
+                                    "tipo": "lista_sentencias",
+                                    "hijos": [
+                                        {
+                                            "tipo": "sent_in",
+                                            "hijos": [
+                                                {
+                                                    "tipo": "id",
+                                                    "valor": "mas"
+                                                }
+                                            ]
+                                        },
+                                        {
+                                            "tipo": "sent_out",
+                                            "hijos": [
+                                                {
+                                                    "tipo": "salida",
+                                                    "hijos": [
+                                                        {
+                                                            "tipo": "id",
+                                                            "valor": "x"
+                                                        }
+                                                    ]
+                                                }
+                                            ]
+                                        }
+                                    ]
+                                }
+                            ]
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

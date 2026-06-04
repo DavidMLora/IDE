@@ -1,0 +1,17 @@
+REPORTE DE ERRORES SINTACTICOS
+--------------------------------------------------
+Error Sintactico: Se esperaba ) pero se encontro '&&' (OP_LOGICO) | Fila: 19 | Col: 14
+Error Sintactico: Se esperaba = pero se encontro 'b' (ID) | Fila: 20 | Col: 14
+Error Sintactico: Se esperaba ; pero se encontro '=' (ASIGNACION) | Fila: 20 | Col: 15
+Error Sintactico: Se esperaba = pero se encontro '+' (OP_ARITMETICO) | Fila: 26 | Col: 2
+Error Sintactico: Se esperaba (, numero, identificador u operador logico | Fila: 26 | Col: 2
+Error Sintactico: Se esperaba (, numero, identificador u operador logico | Fila: 28 | Col: 2
+Error Sintactico: Se esperaba ; pero se encontro 'c' (ID) | Fila: 29 | Col: 1
+Error Sintactico: Se esperaba = pero se encontro '--' (OP_ARITMETICO) | Fila: 29 | Col: 2
+Error Sintactico: Se esperaba (, numero, identificador u operador logico | Fila: 29 | Col: 2
+Error Sintactico: Se esperaba while pero se encontro ';' (SIMBOLO) | Fila: 36 | Col: 5
+Error Sintactico: Se esperaba (, numero, identificador u operador logico | Fila: 36 | Col: 5
+Error Sintactico: Se esperaba ; pero se encontro 'until' (ID) | Fila: 38 | Col: 2
+Error Sintactico: Se esperaba = pero se encontro '(' (SIMBOLO) | Fila: 38 | Col: 7
+Error Sintactico: Se esperaba ) pero se encontro '=' (ASIGNACION) | Fila: 38 | Col: 9
+Error Sintactico: Se esperaba ; pero se encontro '=' (ASIGNACION) | Fila: 38 | Col: 9

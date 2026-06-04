@@ -159,6 +159,7 @@ class MainWindow(QMainWindow):
         
         self.sidebar = QWidget()
         self.sidebar.setObjectName('sidebar')
+        self.sidebar.setMinimumSize(0, 0)
         sidebar_layout = QVBoxLayout(self.sidebar)
         sidebar_layout.setContentsMargins(6, 6, 6, 6)
         sidebar_layout.setSpacing(6)
@@ -303,6 +304,7 @@ class MainWindow(QMainWindow):
 
     def _assemble_layout(self):
         self.editor_container = QWidget()
+        self.editor_container.setMinimumSize(0, 0) # <--- Permitir que se encoja para dar espacio a los paneles
         editor_layout = QVBoxLayout(self.editor_container)
         editor_layout.setContentsMargins(10, 10, 5, 5)
         editor_layout.addWidget(self.view_stack)
@@ -312,6 +314,7 @@ class MainWindow(QMainWindow):
         self.h_splitter.addWidget(self.editor_container)
         
         self.panel_derecho = QWidget()
+        self.panel_derecho.setMinimumSize(0, 0)
         panel_derecho_layout = QVBoxLayout(self.panel_derecho)
         panel_derecho_layout.setContentsMargins(5, 10, 10, 5)
         
@@ -348,6 +351,7 @@ class MainWindow(QMainWindow):
         self.v_splitter.addWidget(self.h_splitter)
         
         self.panel_inferior = QWidget()
+        self.panel_inferior.setMinimumSize(0, 0)
         panel_inferior_layout = QVBoxLayout(self.panel_inferior)
         panel_inferior_layout.setContentsMargins(10, 5, 10, 10)
         
@@ -380,6 +384,9 @@ class MainWindow(QMainWindow):
         panel_inferior_layout.addWidget(self.consola_inferior)
         self.v_splitter.addWidget(self.panel_inferior)
 
+        self.h_splitter.setStretchFactor(0, 1)
+        self.h_splitter.setStretchFactor(1, 4)
+        self.h_splitter.setStretchFactor(2, 1)
         self.v_splitter.setStretchFactor(0, 3)
         self.v_splitter.setStretchFactor(1, 1)
         self.setCentralWidget(self.v_splitter)
