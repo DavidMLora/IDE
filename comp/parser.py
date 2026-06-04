@@ -206,6 +206,21 @@ class Parser:
         if id_tok:
             nodo["hijos"].append({"tipo": "id", "valor": id_tok.lexema})
             
+        tok = self.actual()
+        if tok and tok.tipo == "OP_ARITMETICO" and tok.lexema in ["+", "-"]:
+            op_str = tok.lexema
+            op1 = self.match("OP_ARITMETICO", op_str)
+            if op1: nodo["hijos"].append({"tipo": "operador", "valor": op1.lexema})
+            op2 = self.match("OP_ARITMETICO", op_str)
+            if op2: nodo["hijos"].append({"tipo": "operador", "valor": op2.lexema})
+            
+            nodo["tipo"] = "incremento" if op_str == "+" else "decremento"
+            
+            if self.actual() and self.actual().lexema == ";":
+                self.match("SIMBOLO", ";")
+                nodo["hijos"].append({"tipo": "simbolo", "valor": ";"})
+            return nodo
+            
         eq_tok = self.match("ASIGNACION", "=")
         if eq_tok:
             nodo["hijos"].append({"tipo": "operador", "valor": "="})
@@ -252,19 +267,26 @@ class Parser:
         
         if self.actual() and self.actual().lexema == "else":
             self.match("RESERVADA", "else")
-            nodo["hijos"].append({"tipo": "keyword", "valor": "else"})
+            nodo_else = {"tipo": "else", "hijos": []}
+            nodo_else["hijos"].append({"tipo": "keyword", "valor": "else"})
             
             if self.actual() and self.actual().lexema == "{":
                 self.avanzar()
-                nodo["hijos"].append({"tipo": "simbolo", "valor": "{"})
+                nodo_else["hijos"].append({"tipo": "simbolo", "valor": "{"})
                 
             lista2 = self.lista_sentencias()
-            if lista2: nodo["hijos"].append(lista2)
+            if lista2: nodo_else["hijos"].append(lista2)
+            
+            nodo["hijos"].append(nodo_else)
             
         if self.actual() and self.actual().lexema in ["end", "}"]:
             val = self.actual().lexema
             self.avanzar()
             nodo["hijos"].append({"tipo": "simbolo", "valor": val})
+            # Consumir ';' opcional despues de end/}
+            if self.actual() and self.actual().lexema == ";":
+                self.avanzar()
+                nodo["hijos"].append({"tipo": "simbolo", "valor": ";"})
             
         return nodo
         
@@ -288,6 +310,10 @@ class Parser:
             val = self.actual().lexema
             self.avanzar()
             nodo["hijos"].append({"tipo": "simbolo", "valor": val})
+            # Consumir ';' opcional despues de end/}
+            if self.actual() and self.actual().lexema == ";":
+                self.avanzar()
+                nodo["hijos"].append({"tipo": "simbolo", "valor": ";"})
             
         return nodo
         
@@ -389,6 +415,21 @@ class Parser:
     def expresion(self):
         nodo = {"tipo": "expresion", "hijos": []}
         
+        comp = self.comparacion()
+        if comp: nodo["hijos"].append(comp)
+        
+        while self.actual() and self.actual().tipo == "OP_LOGICO" and self.actual().lexema in ["&&", "||"]:
+            tok = self.actual()
+            self.avanzar()
+            nodo["hijos"].append({"tipo": "op_logico", "valor": tok.lexema})
+            comp2 = self.comparacion()
+            if comp2: nodo["hijos"].append(comp2)
+            
+        return nodo if len(nodo["hijos"]) > 0 else None
+        
+    def comparacion(self):
+        nodo = {"tipo": "comparacion", "hijos": []}
+        
         simple = self.expresion_simple()
         if simple: nodo["hijos"].append(simple)
         
@@ -408,7 +449,7 @@ class Parser:
         term = self.termino()
         if term: nodo["hijos"].append(term)
         
-        while self.actual() and (self.actual().lexema in ["+", "-", "++", "--"] or self.actual().tipo == "OP_ARITMETICO" and self.actual().lexema in ["+", "-"]):
+        while self.actual() and self.actual().tipo == "OP_ARITMETICO" and self.actual().lexema in ["+", "-"]:
             tok = self.actual()
             self.avanzar()
             nodo["hijos"].append({"tipo": "suma_op", "valor": tok.lexema})
@@ -509,7 +550,7 @@ def convertir_a_ast(nodo):
             
     # Simplificar nodos "cascarón" de la gramática (que solo tienen un hijo y sirven de paso intermedio)
     nodos_intermedios = [
-        "sent_expresion", "expresion", "expresion_simple", 
+        "sent_expresion", "expresion", "comparacion", "expresion_simple", 
         "termino", "factor", "componente", "lista_sentencias_wrapper"
     ]
     
@@ -529,7 +570,7 @@ def convertir_a_ast(nodo):
     # Convierte [expr, op, expr, op, expr] en un árbol con los operadores como raíz
     operadores_tipos = ["suma_op", "mult_op", "pot_op", "op_relacional", "op_logico", "operador"]
     
-    if len(hijos_limpios) >= 3 and len(hijos_limpios) % 2 == 1:
+    if nodo["tipo"] not in ["incremento", "decremento"] and len(hijos_limpios) >= 3 and len(hijos_limpios) % 2 == 1:
         is_expr = True
         for i, h in enumerate(hijos_limpios):
             if i % 2 == 1:

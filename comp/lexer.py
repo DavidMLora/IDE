@@ -19,7 +19,7 @@ REGLAS = [
     ('ENTERO',           r'\b\d+\b'),               # Números enteros
     ('OP_RELACIONAL',    r'<=|>=|==|!=|<|>'),       # Operadores relacionales
     ('OP_LOGICO',        r'&&|\|\||!'),             # Operadores lógicos (and, or, not)
-    ('OP_ARITMETICO',    r'\+\+|--|\+|-|\*|/|%|\^'),# Operadores aritméticos
+    ('OP_ARITMETICO',    r'\+|-|\*|/|%|\^'),# Operadores aritméticos
     ('ASIGNACION',       r'='),                     # Asignación
     ('CADENA',           r'"[^"\\]*(\\.[^"\\]*)*"'),# Cadenas de texto ("...")
     ('CARACTER',         r"'[^'\\]*(\\.[^'\\]*)*'"),# Caracteres ('c')
