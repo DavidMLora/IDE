@@ -142,17 +142,17 @@ class Parser:
         
         id_tok = self.match("ID")
         if id_tok:
-            nodo["hijos"].append({"tipo": "id", "valor": id_tok.lexema})
+            nodo["hijos"].append({"tipo": "id", "valor": id_tok.lexema, "fila": id_tok.fila})
             
         while self.actual() and self.actual().lexema == ",":
             self.match("SIMBOLO", ",")
             nodo["hijos"].append({"tipo": "simbolo", "valor": ","})
             next_id = self.match("ID")
             if next_id:
-                nodo["hijos"].append({"tipo": "id", "valor": next_id.lexema})
+                nodo["hijos"].append({"tipo": "id", "valor": next_id.lexema, "fila": next_id.fila})
                 
         return nodo
-        
+   
     def tipo_dato(self):
         tok = self.actual()
         if tok and tok.tipo == "RESERVADA" and tok.lexema in ["int", "float", "bool"]:
@@ -204,7 +204,7 @@ class Parser:
         
         id_tok = self.match("ID")
         if id_tok:
-            nodo["hijos"].append({"tipo": "id", "valor": id_tok.lexema})
+            nodo["hijos"].append({"tipo": "id", "valor": id_tok.lexema, "fila": id_tok.fila})
             
         tok = self.actual()
         if tok and tok.tipo == "OP_ARITMETICO" and tok.lexema in ["+", "-"]:
@@ -230,7 +230,7 @@ class Parser:
             nodo["hijos"].append(sent_expr)
             
         return nodo
-        
+
     def sent_expresion(self):
         nodo = {"tipo": "sent_expresion", "hijos": []}
         
@@ -334,8 +334,8 @@ class Parser:
             self.avanzar()
             nodo["hijos"].append({"tipo": "simbolo", "valor": "}"})
             
-        self.match("RESERVADA", "while")
-        nodo["hijos"].append({"tipo": "keyword", "valor": "while"})
+        self.match("RESERVADA", "until")
+        nodo["hijos"].append({"tipo": "keyword", "valor": "until"})
         
         expr = self.expresion()
         if expr: nodo["hijos"].append(expr)
@@ -358,7 +358,7 @@ class Parser:
                 nodo["hijos"].append({"tipo": "operador", "valor": ">>"})
         
         id_tok = self.match("ID")
-        if id_tok: nodo["hijos"].append({"tipo": "id", "valor": id_tok.lexema})
+        if id_tok: nodo["hijos"].append({"tipo": "id", "valor": id_tok.lexema, "fila": id_tok.fila})
         
         pto = self.match("SIMBOLO", ";")
         if pto: nodo["hijos"].append({"tipo": "simbolo", "valor": ";"})
@@ -507,11 +507,11 @@ class Parser:
             return nodo
         elif tok.tipo in ["ENTERO", "REAL"]:
             self.avanzar()
-            nodo["hijos"].append({"tipo": "numero", "valor": tok.lexema})
+            nodo["hijos"].append({"tipo": "numero", "valor": tok.lexema, "fila": tok.fila})
             return nodo
         elif tok.tipo == "ID":
             self.avanzar()
-            nodo["hijos"].append({"tipo": "id", "valor": tok.lexema})
+            nodo["hijos"].append({"tipo": "id", "valor": tok.lexema, "fila": tok.fila})
             return nodo
         elif tok.tipo == "RESERVADA" and tok.lexema in ["true", "false", "bool"]: 
             self.avanzar()
@@ -595,6 +595,7 @@ def convertir_a_ast(nodo):
         
     nuevo = {"tipo": nodo["tipo"]}
     if "valor" in nodo: nuevo["valor"] = nodo["valor"]
+    if "fila" in nodo: nuevo["fila"] = nodo["fila"]
     nuevo["hijos"] = hijos_limpios
     
     return nuevo
