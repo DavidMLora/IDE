@@ -991,12 +991,17 @@ class MainWindow(QMainWindow):
         
         # Extraer los atributos semánticos que inyectó semantic.py
         atributos = []
+        if 'dtype' in nodo_datos:
+            atributos.append(f"Tipo heredado: {nodo_datos['dtype']}")
         if 'type' in nodo_datos:
             atributos.append(f"Tipo: {nodo_datos['type']}")
         if 'eval' in nodo_datos:
             val = nodo_datos['eval']
             str_val = f"{val:.2f}" if isinstance(val, float) else str(val)
             atributos.append(f"Valor: {str_val}")
+        if 'conversion' in nodo_datos:
+            conv = nodo_datos['conversion']
+            atributos.append(f"Conversión: {conv['de']} → {conv['a']}")
             
         str_atributos = f"  [{', '.join(atributos)}]" if atributos else ""
         texto_item = f"{tipo}: {valor}" if valor else tipo
@@ -1018,10 +1023,10 @@ class MainWindow(QMainWindow):
         item.setExpanded(True)
 
     def ejecutar_sintactico(self):
-
+        """F7: ejecuta ÚNICAMENTE el parser y presenta el AST original."""
         ed = self.editor_actual()
-        if not ed or not hasattr(ed, 'file_path') or not ed.file_path: return
-        
+        if not ed or not getattr(ed, "file_path", None):
+            return False
         self.guardar_archivo()
         self.restaurar_panel_derecho()
         self.restaurar_panel_inferior()
@@ -1029,570 +1034,64 @@ class MainWindow(QMainWindow):
 
         directorio, archivo = os.path.split(ed.file_path)
         nombre_base, _ = os.path.splitext(archivo)
-        
         out_dir = os.path.join(directorio, ".compilados")
         os.makedirs(out_dir, exist_ok=True)
-        
         ruta_tokens = os.path.join(out_dir, f"{nombre_base}_tokens.txt")
         ruta_ast = os.path.join(out_dir, f"{nombre_base}_ast.json")
         ruta_errores = os.path.join(out_dir, f"{nombre_base}_errores_sintacticos.txt")
-        
-        if not os.path.exists(ruta_tokens):
-            self.consola_inferior.widget(1).setPlainText("Error: No se encontro archivo de tokens. Ejecute analisis lexico primero.")
-            self.consola_inferior.setCurrentIndex(1)
-            return
+        vista = self.tabs_analisis.widget(1)
+        vista.clear()
 
-        DIRECTORIO_BASE = os.path.dirname(os.path.abspath(__file__))
-        RUTA_PARSER = os.path.join(DIRECTORIO_BASE, "comp", "parser.py")
-        
+        if not os.path.isfile(ruta_tokens):
+            self.consola_inferior.widget(1).setPlainText(
+                "No se encontró el archivo de tokens. Ejecute F6 primero."
+            )
+            self.consola_inferior.setCurrentIndex(1)
+            return False
+
+        ruta_parser = os.path.join(os.path.dirname(os.path.abspath(__file__)), "comp", "parser.py")
+        # Impedir que un AST viejo se muestre como resultado de una ejecución fallida.
+        if os.path.isfile(ruta_ast):
+            os.remove(ruta_ast)
+        if os.path.isfile(ruta_errores):
+            os.remove(ruta_errores)
         try:
             proceso = subprocess.run(
-                [sys.executable, RUTA_PARSER, ruta_tokens],
-                capture_output=True,
-                text=True,
-                encoding='utf-8',
-                errors='replace'
+                [sys.executable, ruta_parser, ruta_tokens], capture_output=True,
+                text=True, encoding="utf-8", errors="replace"
             )
-            
-            arbol_sintactico = self.tabs_analisis.widget(1)
-            arbol_sintactico.clear()
-            
-            if os.path.exists(ruta_ast):
-                with open(ruta_ast, 'r', encoding='utf-8') as f:
-                    ast_data = json.load(f)
-                self._poblar_arbol_sintactico(ast_data, arbol_sintactico)
+            if os.path.isfile(ruta_errores):
+                with open(ruta_errores, "r", encoding="utf-8") as f:
+                    contenido_errores = f.read()
             else:
-                QTreeWidgetItem(arbol_sintactico, ["Error: No se genero el AST."])
-                
-            self.tabs_analisis.setCurrentIndex(1)
-            
-            if os.path.exists(ruta_errores):
-                with open(ruta_errores, 'r', encoding='utf-8') as f_err:
-                    contenido_errores = f_err.read()
-                
-                self.consola_inferior.widget(1).setPlainText(contenido_errores)
-                self.consola_inferior.setCurrentIndex(1) 
-            else:
-                self.consola_inferior.widget(1).setPlainText(f">> No se generó el archivo de errores sintácticos.\nSalida:\n{proceso.stderr}")
+                contenido_errores = ""
+            self.consola_inferior.widget(1).setPlainText(
+                contenido_errores or proceso.stderr or "Sin errores sintácticos reportados."
+            )
+            if proceso.returncode != 0 or not os.path.isfile(ruta_ast):
+                QTreeWidgetItem(vista, ["No se pudo generar el AST. Revise errores sintácticos."])
                 self.consola_inferior.setCurrentIndex(1)
-                
-        except Exception as e:
-            self.consola_inferior.widget(1).setPlainText(f"Error crítico en analizador sintáctico:\n{str(e)}")
+                self.tabs_analisis.setCurrentIndex(1)
+                return False
+            with open(ruta_ast, "r", encoding="utf-8") as f:
+                ast_data = json.load(f)
+            if not isinstance(ast_data, dict):
+                raise ValueError("El parser no entregó un AST en formato objeto JSON.")
+            self._poblar_arbol_sintactico(ast_data, vista)
+            self.tabs_analisis.setCurrentIndex(1)
+            return True
+        except (OSError, ValueError, json.JSONDecodeError) as e:
+            self.consola_inferior.widget(1).setPlainText(
+                f"Error en análisis sintáctico: {e}"
+            )
             self.consola_inferior.setCurrentIndex(1)
-
-    
-        ed = self.editor_actual()
-        if not ed or not hasattr(ed, 'file_path') or not ed.file_path: return
-        
-        self.guardar_archivo()
-        self.restaurar_panel_derecho()
-        self.restaurar_panel_inferior()
-        self.status_bar.showMessage("Ejecutando Análisis Semántico...", 3000)
-
-        directorio, archivo = os.path.split(ed.file_path)
-        nombre_base, _ = os.path.splitext(archivo)
-        
-        out_dir = os.path.join(directorio, ".compilados")
-        ruta_ast = os.path.join(out_dir, f"{nombre_base}_ast.json")
-        ruta_errores = os.path.join(out_dir, f"{nombre_base}_errores_semanticos.txt")
-        ruta_ast_anotado = os.path.join(out_dir, f"{nombre_base}_ast_anotado.json")
-
-        # 1. Validar que el árbol sintáctico exista
-        if not os.path.exists(ruta_ast):
-            self.consola_inferior.widget(2).setPlainText("Error: No se encontró el AST. Ejecute el análisis sintáctico primero.")
-            self.consola_inferior.setCurrentIndex(2)
-            return
-
-        try:
-            from comp.semantic import AnalizadorSemantico 
-            
-            with open(ruta_ast, 'r', encoding='utf-8') as f:
-                ast_data = json.load(f)
-                
-            # Generamos el JSON anotado
-            analizador = AnalizadorSemantico(ast_data)
-            tabla_simbolos, errores = analizador.analizar(ruta_salida=ruta_ast_anotado)
-            
-            # Tabla de Símbolos (Pestaña 3 es QTextEdit, aquí sí usamos setPlainText)
-            tabla_str = f"{'Nombre':<15} | {'Tipo':<10} | {'Loc':<5} | {'Líneas'}\n"
-            tabla_str += "-" * 55 + "\n"
-            for nombre, info in tabla_simbolos.tabla.items():
-                lineas_str = ", ".join(map(str, info['lineas']))
-                tipo_str = str(info['tipo']) if info['tipo'] else "Desconocido"
-                tabla_str += f"{nombre:<15} | {tipo_str:<10} | {info['memloc']:<5} | {lineas_str}\n"
-                
-            self.tabs_analisis.widget(3).setPlainText(tabla_str)
-            
-            # Interfaz del Árbol Semántico (Pestaña 2 AHORA ES QTreeWidget)
-            arbol_semantico_ui = self.tabs_analisis.widget(2)
-            arbol_semantico_ui.clear()
-            
-            if not errores:
-                if os.path.exists(ruta_ast_anotado):
-                    with open(ruta_ast_anotado, 'r', encoding='utf-8') as f_arbol:
-                        ast_anotado_data = json.load(f_arbol)
-                    self._poblar_arbol_semantico(ast_anotado_data, arbol_semantico_ui)
-                else:
-                    QTreeWidgetItem(arbol_semantico_ui, ["Error: No se pudo generar el AST Anotado."])
-                
-                self.consola_inferior.widget(2).clear() 
-                self.tabs_analisis.setCurrentIndex(2)
-            else:
-                # Si hay errores, usamos QTreeWidgetItem para imprimir el mensaje dentro del árbol
-                QTreeWidgetItem(arbol_semantico_ui, [f"Se encontraron {len(errores)} errores. Revise la consola."])
-                
-                with open(ruta_errores, 'w', encoding='utf-8') as f_err:
-                    f_err.write("\n".join(errores))
-                    
-                self.consola_inferior.widget(2).setPlainText("\n".join(errores))
-                self.consola_inferior.setCurrentIndex(2) 
-                self.tabs_analisis.setCurrentIndex(2)    
-            
-        except Exception as e:
-            self.consola_inferior.widget(2).setPlainText(f"Error crítico en analizador semántico:\n{str(e)}")
-            self.consola_inferior.setCurrentIndex(2)
-        ed = self.editor_actual()
-        if not ed or not hasattr(ed, 'file_path') or not ed.file_path: return
-        
-        self.guardar_archivo()
-        self.restaurar_panel_derecho()
-        self.restaurar_panel_inferior()
-        self.status_bar.showMessage("Ejecutando Análisis Semántico...", 3000)
-
-        directorio, archivo = os.path.split(ed.file_path)
-        nombre_base, _ = os.path.splitext(archivo)
-        
-        out_dir = os.path.join(directorio, ".compilados")
-        ruta_ast = os.path.join(out_dir, f"{nombre_base}_ast.json")
-        ruta_errores = os.path.join(out_dir, f"{nombre_base}_errores_semanticos.txt")
-        ruta_ast_anotado = os.path.join(out_dir, f"{nombre_base}_ast_anotado.json")
-
-        # 1. Validar que el árbol sintáctico exista
-        if not os.path.exists(ruta_ast):
-            self.consola_inferior.widget(2).setPlainText("Error: No se encontró el AST. Ejecute el análisis sintáctico primero.")
-            self.consola_inferior.setCurrentIndex(2)
-            return
-
-        try:
-            from comp.semantic import AnalizadorSemantico 
-            
-            with open(ruta_ast, 'r', encoding='utf-8') as f:
-                ast_data = json.load(f)
-                
-            # Generamos el JSON anotado
-            analizador = AnalizadorSemantico(ast_data)
-            tabla_simbolos, errores = analizador.analizar(ruta_salida=ruta_ast_anotado)
-            
-            # Tabla de Símbolos (Pestaña 3 es QTextEdit, aquí sí usamos setPlainText)
-            tabla_str = f"{'Nombre':<15} | {'Tipo':<10} | {'Loc':<5} | {'Líneas'}\n"
-            tabla_str += "-" * 55 + "\n"
-            for nombre, info in tabla_simbolos.tabla.items():
-                lineas_str = ", ".join(map(str, info['lineas']))
-                tipo_str = str(info['tipo']) if info['tipo'] else "Desconocido"
-                tabla_str += f"{nombre:<15} | {tipo_str:<10} | {info['memloc']:<5} | {lineas_str}\n"
-                
-            self.tabs_analisis.widget(3).setPlainText(tabla_str)
-            
-            # Interfaz del Árbol Semántico (Pestaña 2 AHORA ES QTreeWidget)
-            arbol_semantico_ui = self.tabs_analisis.widget(2)
-            arbol_semantico_ui.clear()
-            
-            if not errores:
-                if os.path.exists(ruta_ast_anotado):
-                    with open(ruta_ast_anotado, 'r', encoding='utf-8') as f_arbol:
-                        ast_anotado_data = json.load(f_arbol)
-                    self._poblar_arbol_semantico(ast_anotado_data, arbol_semantico_ui)
-                else:
-                    QTreeWidgetItem(arbol_semantico_ui, ["Error: No se pudo generar el AST Anotado."])
-                
-                self.consola_inferior.widget(2).clear() 
-                self.tabs_analisis.setCurrentIndex(2)
-            else:
-                # Si hay errores, usamos QTreeWidgetItem para imprimir el mensaje dentro del árbol
-                QTreeWidgetItem(arbol_semantico_ui, [f"Se encontraron {len(errores)} errores. Revise la consola."])
-                
-                with open(ruta_errores, 'w', encoding='utf-8') as f_err:
-                    f_err.write("\n".join(errores))
-                    
-                self.consola_inferior.widget(2).setPlainText("\n".join(errores))
-                self.consola_inferior.setCurrentIndex(2) 
-                self.tabs_analisis.setCurrentIndex(2)    
-            
-        except Exception as e:
-            self.consola_inferior.widget(2).setPlainText(f"Error crítico en analizador semántico:\n{str(e)}")
-            self.consola_inferior.setCurrentIndex(2)
-        ed = self.editor_actual()
-        if not ed or not hasattr(ed, 'file_path') or not ed.file_path: return
-        
-        self.guardar_archivo()
-        self.restaurar_panel_derecho()
-        self.restaurar_panel_inferior()
-        self.status_bar.showMessage("Ejecutando Análisis Semántico...", 3000)
-
-        directorio, archivo = os.path.split(ed.file_path)
-        nombre_base, _ = os.path.splitext(archivo)
-        
-        out_dir = os.path.join(directorio, ".compilados")
-        ruta_ast = os.path.join(out_dir, f"{nombre_base}_ast.json")
-        ruta_errores = os.path.join(out_dir, f"{nombre_base}_errores_semanticos.txt")
-        # NUEVO: Ruta unificada dentro de la carpeta .compilados
-        ruta_arbol_visual = os.path.join(out_dir, f"{nombre_base}_arbol_visual.txt")
-        ruta_ast_anotado = os.path.join(out_dir, f"{nombre_base}_ast_anotado.json")
-        # 1. Validar que el árbol sintáctico exista
-        if not os.path.exists(ruta_ast):
-            self.consola_inferior.widget(2).setPlainText("Error: No se encontró el AST. Ejecute el análisis sintáctico primero.")
-            self.consola_inferior.setCurrentIndex(2)
-            return
-
-        # (Asegúrate de cambiar también la variable de salida arriba a .json)
-        # ruta_ast_anotado = os.path.join(out_dir, f"{nombre_base}_ast_anotado.json")
-
-        try:
-            from comp.semantic import AnalizadorSemantico 
-            
-            with open(ruta_ast, 'r', encoding='utf-8') as f:
-                ast_data = json.load(f)
-                
-            # Generamos el JSON anotado
-            analizador = AnalizadorSemantico(ast_data)
-            tabla_simbolos, errores = analizador.analizar(ruta_salida=ruta_ast_anotado)
-            
-            # Tabla de Símbolos
-            tabla_str = f"{'Nombre':<15} | {'Tipo':<10} | {'Loc':<5} | {'Líneas'}\n"
-            tabla_str += "-" * 55 + "\n"
-            for nombre, info in tabla_simbolos.tabla.items():
-                lineas_str = ", ".join(map(str, info['lineas']))
-                tipo_str = str(info['tipo']) if info['tipo'] else "Desconocido"
-                tabla_str += f"{nombre:<15} | {tipo_str:<10} | {info['memloc']:<5} | {lineas_str}\n"
-                
-            self.tabs_analisis.widget(3).setPlainText(tabla_str)
-            
-            # Interfaz del Árbol Semántico
-            arbol_semantico_ui = self.tabs_analisis.widget(2)
-            arbol_semantico_ui.clear()
-            
-            if not errores:
-                if os.path.exists(ruta_ast_anotado):
-                    with open(ruta_ast_anotado, 'r', encoding='utf-8') as f_arbol:
-                        ast_anotado_data = json.load(f_arbol)
-                    self._poblar_arbol_semantico(ast_anotado_data, arbol_semantico_ui)
-                else:
-                    QTreeWidgetItem(arbol_semantico_ui, ["Error: No se pudo generar el AST Anotado."])
-                
-                self.consola_inferior.widget(2).clear() 
-                self.tabs_analisis.setCurrentIndex(2)
-            else:
-                QTreeWidgetItem(arbol_semantico_ui, [f"Se encontraron {len(errores)} errores. Revise la consola."])
-                
-                with open(ruta_errores, 'w', encoding='utf-8') as f_err:
-                    f_err.write("\n".join(errores))
-                    
-                self.consola_inferior.widget(2).setPlainText("\n".join(errores))
-                self.consola_inferior.setCurrentIndex(2) 
-                self.tabs_analisis.setCurrentIndex(2)    
-            
-        except Exception as e:
-            self.consola_inferior.widget(2).setPlainText(f"Error crítico en analizador semántico:\n{str(e)}")
-            self.consola_inferior.setCurrentIndex(2)
-        ed = self.editor_actual()
-        if not ed or not hasattr(ed, 'file_path') or not ed.file_path: return
-        
-        self.guardar_archivo()
-        self.restaurar_panel_derecho()
-        self.restaurar_panel_inferior()
-        self.status_bar.showMessage("Ejecutando Análisis Semántico...", 3000)
-
-        directorio, archivo = os.path.split(ed.file_path)
-        nombre_base, _ = os.path.splitext(archivo)
-        
-        out_dir = os.path.join(directorio, ".compilados")
-        ruta_ast = os.path.join(out_dir, f"{nombre_base}_ast.json")
-        ruta_errores = os.path.join(out_dir, f"{nombre_base}_errores_semanticos.txt")
-        # Definimos la ruta donde guardamos el nuevo árbol visual
-        ruta_arbol_visual = os.path.join(directorio, "arbol_anotado_visual.txt")
-
-        # 1. Validar que el árbol sintáctico exista
-        if not os.path.exists(ruta_ast):
-            self.consola_inferior.widget(2).setPlainText("Error: No se encontró el AST. Ejecute el análisis sintáctico primero.")
-            self.consola_inferior.setCurrentIndex(2)
-            return
-
-        try:
-            # IMPORTANTE: Asegúrate de que semantic.py esté en la misma carpeta o en 'comp'
-            from comp.semantic import AnalizadorSemantico 
-            
-            # 2. Cargar el AST desde el archivo JSON
-            with open(ruta_ast, 'r', encoding='utf-8') as f:
-                ast_data = json.load(f)
-                
-            # 3. Ejecutar el análisis
-            analizador = AnalizadorSemantico(ast_data)
-            tabla_simbolos, errores = analizador.analizar()
-            
-            # 4. Formatear y mostrar la Tabla de Símbolos en la Pestaña 3 ("Tabla Símbolos")
-            tabla_str = f"{'Nombre':<15} | {'Tipo':<10} | {'Loc':<5} | {'Líneas'}\n"
-            tabla_str += "-" * 55 + "\n"
-            for nombre, info in tabla_simbolos.tabla.items():
-                lineas_str = ", ".join(map(str, info['lineas']))
-                # Manejar casos donde el tipo sea None temporalmente
-                tipo_str = str(info['tipo']) if info['tipo'] else "Desconocido"
-                tabla_str += f"{nombre:<15} | {tipo_str:<10} | {info['memloc']:<5} | {lineas_str}\n"
-                
-            self.tabs_analisis.widget(3).setPlainText(tabla_str)
-            
-            # 5. Manejar el resultado de los Errores y Mostrar Árbol Anotado
-            if not errores:
-                # Leer el árbol anotado
-                try:
-                    with open(ruta_arbol_visual, 'r', encoding='utf-8') as f_arbol:
-                        contenido_arbol = f_arbol.read()
-                except FileNotFoundError:
-                    contenido_arbol = ">> ANÁLISIS SEMÁNTICO FINALIZADO.\n\n[OK] Cero errores encontrados.\n[!] No se pudo generar la representación visual del árbol."
-
-                self.tabs_analisis.widget(2).setPlainText(contenido_arbol)
-                self.consola_inferior.widget(2).clear() 
-                self.tabs_analisis.setCurrentIndex(2)   # Mostramos la pestaña Semántico para ver el árbol
-            else:
-                self.tabs_analisis.widget(2).setPlainText(f">> ANÁLISIS SEMÁNTICO FINALIZADO.\n\n[!] Se encontraron {len(errores)} errores semánticos.")
-                
-                # Guardar errores en un archivo físico para el registro
-                with open(ruta_errores, 'w', encoding='utf-8') as f_err:
-                    f_err.write("\n".join(errores))
-                    
-                # Mostrar los errores en la pestaña "Errores Semánticos"
-                self.consola_inferior.widget(2).setPlainText("\n".join(errores))
-                self.consola_inferior.setCurrentIndex(2) 
-                self.tabs_analisis.setCurrentIndex(2)    
-            
-        except Exception as e:
-            self.consola_inferior.widget(2).setPlainText(f"Error crítico en analizador semántico:\n{str(e)}")
-            self.consola_inferior.setCurrentIndex(2)
-        ed = self.editor_actual()
-        if not ed or not hasattr(ed, 'file_path') or not ed.file_path: return
-        
-        self.guardar_archivo()
-        self.restaurar_panel_derecho()
-        self.restaurar_panel_inferior()
-        self.status_bar.showMessage("Ejecutando Análisis Semántico...", 3000)
-
-        directorio, archivo = os.path.split(ed.file_path)
-        nombre_base, _ = os.path.splitext(archivo)
-        
-        out_dir = os.path.join(directorio, ".compilados")
-        ruta_ast = os.path.join(out_dir, f"{nombre_base}_ast.json")
-        ruta_errores = os.path.join(out_dir, f"{nombre_base}_errores_semanticos.txt")
-
-        # 1. Validar que el árbol sintáctico exista
-        if not os.path.exists(ruta_ast):
-            self.consola_inferior.widget(2).setPlainText("Error: No se encontró el AST. Ejecute el análisis sintáctico primero.")
-            self.consola_inferior.setCurrentIndex(2)
-            return
-
-        try:
-            # IMPORTANTE: Asegúrate de que semantic.py esté en la misma carpeta o en 'comp'
-            # Si lo guardaste en la carpeta 'comp', usa: from comp.semantic import AnalizadorSemantico
-            from comp.semantic import AnalizadorSemantico 
-            
-            # 2. Cargar el AST desde el archivo JSON
-            with open(ruta_ast, 'r', encoding='utf-8') as f:
-                ast_data = json.load(f)
-                
-            # 3. Ejecutar el análisis
-            analizador = AnalizadorSemantico(ast_data)
-            tabla_simbolos, errores = analizador.analizar()
-            
-            # 4. Formatear y mostrar la Tabla de Símbolos en la Pestaña 3 ("Tabla Símbolos")
-            tabla_str = f"{'Nombre':<15} | {'Tipo':<10} | {'Loc':<5} | {'Líneas'}\n"
-            tabla_str += "-" * 55 + "\n"
-            for nombre, info in tabla_simbolos.tabla.items():
-                lineas_str = ", ".join(map(str, info['lineas']))
-                # Manejar casos donde el tipo sea None temporalmente
-                tipo_str = str(info['tipo']) if info['tipo'] else "Desconocido"
-                tabla_str += f"{nombre:<15} | {tipo_str:<10} | {info['memloc']:<5} | {lineas_str}\n"
-                
-            self.tabs_analisis.widget(3).setPlainText(tabla_str)
-            
-            # 5. Manejar el resultado de los Errores
-            if not errores:
-                self.tabs_analisis.widget(2).setPlainText(">> ANÁLISIS SEMÁNTICO FINALIZADO.\n\n[OK] Cero errores encontrados.\n[OK] Tabla de símbolos generada exitosamente.")
-                self.consola_inferior.widget(2).clear() # Limpiar consola de errores
-                self.tabs_analisis.setCurrentIndex(3)   # Mostrar tabla de símbolos por defecto
-            else:
-                self.tabs_analisis.widget(2).setPlainText(f">> ANÁLISIS SEMÁNTICO FINALIZADO.\n\n[!] Se encontraron {len(errores)} errores semánticos.")
-                
-                # Guardar errores en un archivo físico para el registro
-                with open(ruta_errores, 'w', encoding='utf-8') as f_err:
-                    f_err.write("\n".join(errores))
-                    
-                # Mostrar los errores en la pestaña "Errores Semánticos" (Índice 2)
-                self.consola_inferior.widget(2).setPlainText("\n".join(errores))
-                self.consola_inferior.setCurrentIndex(2) # Cambiar foco a la consola inferior
-                self.tabs_analisis.setCurrentIndex(2)    # Mostrar resumen
-            
-        except Exception as e:
-            self.consola_inferior.widget(2).setPlainText(f"Error crítico en analizador semántico:\n{str(e)}")
-            self.consola_inferior.setCurrentIndex(2)
-    
-        ed = self.editor_actual()
-        if not ed or not hasattr(ed, 'file_path') or not ed.file_path: return
-        
-        self.guardar_archivo()
-        self.restaurar_panel_derecho()
-        self.restaurar_panel_inferior()
-        self.status_bar.showMessage("Ejecutando Análisis Semántico...", 3000)
-
-        directorio, archivo = os.path.split(ed.file_path)
-        nombre_base, _ = os.path.splitext(archivo)
-        
-        out_dir = os.path.join(directorio, ".compilados")
-        ruta_ast = os.path.join(out_dir, f"{nombre_base}_ast.json")
-        ruta_errores = os.path.join(out_dir, f"{nombre_base}_errores_semanticos.txt")
-        ruta_ast_anotado = os.path.join(out_dir, f"{nombre_base}_ast_anotado.json")
-
-        # 1. Validar que el árbol sintáctico exista
-        if not os.path.exists(ruta_ast):
-            self.consola_inferior.widget(2).setPlainText("Error: No se encontró el AST. Ejecute el análisis sintáctico primero.")
-            self.consola_inferior.setCurrentIndex(2)
-            return
-
-        try:
-            from comp.semantic import AnalizadorSemantico 
-            
-            with open(ruta_ast, 'r', encoding='utf-8') as f:
-                ast_data = json.load(f)
-                
-            # Generamos el JSON anotado
-            analizador = AnalizadorSemantico(ast_data)
-            tabla_simbolos, errores = analizador.analizar(ruta_salida=ruta_ast_anotado)
-            
-            # Tabla de Símbolos (Pestaña 3 es QTextEdit, aquí sí usamos setPlainText)
-            tabla_str = f"{'Nombre':<15} | {'Tipo':<10} | {'Loc':<5} | {'Líneas'}\n"
-            tabla_str += "-" * 55 + "\n"
-            for nombre, info in tabla_simbolos.tabla.items():
-                lineas_str = ", ".join(map(str, info['lineas']))
-                tipo_str = str(info['tipo']) if info['tipo'] else "Desconocido"
-                tabla_str += f"{nombre:<15} | {tipo_str:<10} | {info['memloc']:<5} | {lineas_str}\n"
-                
-            self.tabs_analisis.widget(3).setPlainText(tabla_str)
-            
-            # Interfaz del Árbol Semántico (Pestaña 2 AHORA ES QTreeWidget)
-            arbol_semantico_ui = self.tabs_analisis.widget(2)
-            arbol_semantico_ui.clear()
-            
-            if not errores:
-                if os.path.exists(ruta_ast_anotado):
-                    with open(ruta_ast_anotado, 'r', encoding='utf-8') as f_arbol:
-                        ast_anotado_data = json.load(f_arbol)
-                    self._poblar_arbol_semantico(ast_anotado_data, arbol_semantico_ui)
-                else:
-                    QTreeWidgetItem(arbol_semantico_ui, ["Error: No se pudo generar el AST Anotado."])
-                
-                self.consola_inferior.widget(2).clear() 
-                self.tabs_analisis.setCurrentIndex(2)
-            else:
-                # Si hay errores, usamos QTreeWidgetItem para imprimir el mensaje dentro del árbol
-                QTreeWidgetItem(arbol_semantico_ui, [f"Se encontraron {len(errores)} errores. Revise la consola."])
-                
-                with open(ruta_errores, 'w', encoding='utf-8') as f_err:
-                    f_err.write("\n".join(errores))
-                    
-                self.consola_inferior.widget(2).setPlainText("\n".join(errores))
-                self.consola_inferior.setCurrentIndex(2) 
-                self.tabs_analisis.setCurrentIndex(2)    
-            
-        except Exception as e:
-            self.consola_inferior.widget(2).setPlainText(f"Error crítico en analizador semántico:\n{str(e)}")
-            self.consola_inferior.setCurrentIndex(2)
-
-    
-
-        ed = self.editor_actual()
-        if not ed or not hasattr(ed, 'file_path') or not ed.file_path: return
-        
-        self.guardar_archivo()
-        self.restaurar_panel_derecho()
-        self.restaurar_panel_inferior()
-        self.status_bar.showMessage("Ejecutando Análisis Semántico...", 3000)
-
-        directorio, archivo = os.path.split(ed.file_path)
-        nombre_base, _ = os.path.splitext(archivo)
-        
-        out_dir = os.path.join(directorio, ".compilados")
-        ruta_ast = os.path.join(out_dir, f"{nombre_base}_ast.json")
-        ruta_errores = os.path.join(out_dir, f"{nombre_base}_errores_semanticos.txt")
-        ruta_ast_anotado = os.path.join(out_dir, f"{nombre_base}_ast_anotado.json")
-
-        # 1. Validar que el árbol sintáctico exista
-        if not os.path.exists(ruta_ast):
-            self.consola_inferior.widget(2).setPlainText("Error: No se encontró el AST. Presione F7 para generar el Análisis Sintáctico primero.")
-            self.consola_inferior.setCurrentIndex(2)
-            return
-
-        try:
-            from comp.semantic import AnalizadorSemantico 
-            
-            # 2. Cargar el AST de forma segura
-            try:
-                with open(ruta_ast, 'r', encoding='utf-8') as f:
-                    ast_data = json.load(f)
-            except json.JSONDecodeError:
-                self.consola_inferior.widget(2).setPlainText("Error: El archivo _ast.json está en blanco. Vuelva a presionar F7 para regenerarlo.")
-                self.consola_inferior.setCurrentIndex(2)
-                return
-                
-            # Generamos el JSON anotado
-            analizador = AnalizadorSemantico(ast_data)
-            tabla_simbolos, errores = analizador.analizar(ruta_salida=ruta_ast_anotado)
-            
-            # Tabla de Símbolos
-            # Tabla de Símbolos (Pestaña 3 AHORA ES QTableWidget)
-            tabla_ui = self.tabs_analisis.widget(3)
-            tabla_ui.setRowCount(0) # Limpiamos los datos anteriores
-            
-            for nombre, info in tabla_simbolos.tabla.items():
-                lineas_str = ", ".join(map(str, info['lineas']))
-                tipo_str = str(info['tipo']) if info['tipo'] else "Desconocido"
-                
-                # Insertar una nueva fila
-                row_position = tabla_ui.rowCount()
-                tabla_ui.insertRow(row_position)
-                
-                # Rellenar las celdas
-                tabla_ui.setItem(row_position, 0, QTableWidgetItem(nombre))
-                tabla_ui.setItem(row_position, 1, QTableWidgetItem(tipo_str))
-                tabla_ui.setItem(row_position, 2, QTableWidgetItem(str(info['memloc'])))
-                tabla_ui.setItem(row_position, 3, QTableWidgetItem(lineas_str))
-                
-            
-            
-            # Interfaz del Árbol Semántico (QTreeWidget)
-            arbol_semantico_ui = self.tabs_analisis.widget(2)
-            arbol_semantico_ui.clear()
-            
-            if not errores:
-                # AQUÍ ESTÁ LA OPTIMIZACIÓN: Pasamos el árbol anotado directo desde la memoria (analizador.ast)
-                self._poblar_arbol_semantico(analizador.ast, arbol_semantico_ui)
-                
-                self.consola_inferior.widget(2).clear() 
-                self.tabs_analisis.setCurrentIndex(2)
-            else:
-                QTreeWidgetItem(arbol_semantico_ui, [f"Se encontraron {len(errores)} errores. Revise la consola."])
-                
-                with open(ruta_errores, 'w', encoding='utf-8') as f_err:
-                    f_err.write("\n".join(errores))
-                    
-                self.consola_inferior.widget(2).setPlainText("\n".join(errores))
-                self.consola_inferior.setCurrentIndex(2) 
-                self.tabs_analisis.setCurrentIndex(2)    
-            
-        except Exception as e:
-            self.consola_inferior.widget(2).setPlainText(f"Error crítico en analizador semántico:\n{str(e)}")
-            self.consola_inferior.setCurrentIndex(2)
+            return False
 
     def ejecutar_semantico(self):
+        """F8: lee el AST del parser, crea su copia anotada y muestra errores."""
         ed = self.editor_actual()
-        if not ed or not hasattr(ed, 'file_path') or not ed.file_path: return
-        
+        if not ed or not getattr(ed, "file_path", None):
+            return False
         self.guardar_archivo()
         self.restaurar_panel_derecho()
         self.restaurar_panel_inferior()
@@ -1600,72 +1099,58 @@ class MainWindow(QMainWindow):
 
         directorio, archivo = os.path.split(ed.file_path)
         nombre_base, _ = os.path.splitext(archivo)
-        
         out_dir = os.path.join(directorio, ".compilados")
+        os.makedirs(out_dir, exist_ok=True)
         ruta_ast = os.path.join(out_dir, f"{nombre_base}_ast.json")
+        ruta_anotado = os.path.join(out_dir, f"{nombre_base}_ast_anotado.json")
+        ruta_visual = os.path.join(out_dir, f"{nombre_base}_arbol_visual.txt")
         ruta_errores = os.path.join(out_dir, f"{nombre_base}_errores_semanticos.txt")
-        ruta_ast_anotado = os.path.join(out_dir, f"{nombre_base}_ast_anotado.json")
+        consola = self.consola_inferior.widget(2)
+        tabla = self.tabs_analisis.widget(3)  # QTableWidget
+        arbol = self.tabs_analisis.widget(2)  # QTreeWidget
+        tabla.setRowCount(0)
+        arbol.clear()
 
-        if not os.path.exists(ruta_ast):
-            self.consola_inferior.widget(2).setPlainText("Error: No se encontró el AST. Presione F7 para generar el Análisis Sintáctico primero.")
+        if not os.path.isfile(ruta_ast):
+            consola.setPlainText("No se encontró el AST. Presione F7 primero.")
             self.consola_inferior.setCurrentIndex(2)
-            return
-
+            return False
         try:
-            from comp.semantic import AnalizadorSemantico 
-            
-            try:
-                with open(ruta_ast, 'r', encoding='utf-8') as f:
-                    ast_data = json.load(f)
-            except json.JSONDecodeError:
-                self.consola_inferior.widget(2).setPlainText("Error: El archivo _ast.json está en blanco. Vuelva a presionar F7 para regenerarlo.")
-                self.consola_inferior.setCurrentIndex(2)
-                return
-                
-            analizador = AnalizadorSemantico(ast_data)
-            tabla_simbolos, errores = analizador.analizar(ruta_salida=ruta_ast_anotado)
-            
-            # -----------------------------------------------------------
-            # LLENAR LA TABLA DE SÍMBOLOS (QTableWidget)
-            # -----------------------------------------------------------
-            tabla_ui = self.tabs_analisis.widget(3)
-            tabla_ui.setRowCount(0) # Limpiamos los datos anteriores
-            
-            for nombre, info in tabla_simbolos.tabla.items():
-                lineas_str = ", ".join(map(str, info['lineas']))
-                tipo_str = str(info['tipo']) if info['tipo'] else "Desconocido"
-                
-                row_position = tabla_ui.rowCount()
-                tabla_ui.insertRow(row_position)
-                
-                tabla_ui.setItem(row_position, 0, QTableWidgetItem(nombre))
-                tabla_ui.setItem(row_position, 1, QTableWidgetItem(tipo_str))
-                tabla_ui.setItem(row_position, 2, QTableWidgetItem(str(info['memloc'])))
-                tabla_ui.setItem(row_position, 3, QTableWidgetItem(lineas_str))
+            from comp.semantic import AnalizadorSemantico
+            with open(ruta_ast, "r", encoding="utf-8") as f:
+                ast_original = json.load(f)
+            if not isinstance(ast_original, dict):
+                raise ValueError("El AST debe ser un objeto JSON.")
+            analizador = AnalizadorSemantico(ast_original)
+            tabla_simbolos, errores = analizador.analizar(ruta_salida=ruta_anotado)
+            with open(ruta_visual, "w", encoding="utf-8") as f:
+                f.write(analizador.generar_arbol_visual(analizador.ast))
 
-            # -----------------------------------------------------------
-            # LLENAR EL ÁRBOL SEMÁNTICO ANOTADO
-            # -----------------------------------------------------------
-            arbol_semantico_ui = self.tabs_analisis.widget(2)
-            arbol_semantico_ui.clear()
-            
-            if not errores:
-                self._poblar_arbol_semantico(analizador.ast, arbol_semantico_ui)
-                self.consola_inferior.widget(2).clear() 
-                self.tabs_analisis.setCurrentIndex(2)
+            for nombre, info in tabla_simbolos.tabla.items():
+                fila = tabla.rowCount()
+                tabla.insertRow(fila)
+                tabla.setItem(fila, 0, QTableWidgetItem(str(nombre)))
+                tabla.setItem(fila, 1, QTableWidgetItem(str(info["tipo"])))
+                tabla.setItem(fila, 2, QTableWidgetItem(str(info["memloc"])))
+                tabla.setItem(fila, 3, QTableWidgetItem(", ".join(map(str, info["lineas"]))))
+
+            # El árbol también se muestra cuando hay errores, con las anotaciones disponibles.
+            self._poblar_arbol_semantico(analizador.ast, arbol)
+            self.tabs_analisis.setCurrentIndex(2)
+            with open(ruta_errores, "w", encoding="utf-8") as f:
+                f.write("\n".join(errores))
+            if errores:
+                consola.setPlainText("\n".join(errores))
+                self.consola_inferior.setCurrentIndex(2)
+                self.status_bar.showMessage(f"Se encontraron {len(errores)} errores semánticos.", 5000)
             else:
-                QTreeWidgetItem(arbol_semantico_ui, [f"Se encontraron {len(errores)} errores. Revise la consola."])
-                
-                with open(ruta_errores, 'w', encoding='utf-8') as f_err:
-                    f_err.write("\n".join(errores))
-                    
-                self.consola_inferior.widget(2).setPlainText("\n".join(errores))
-                self.consola_inferior.setCurrentIndex(2) 
-                self.tabs_analisis.setCurrentIndex(2)    
-            
-        except Exception as e:
-            self.consola_inferior.widget(2).setPlainText(f"Error crítico en analizador semántico:\n{str(e)}")
+                consola.setPlainText("Análisis semántico finalizado sin errores.")
+                self.status_bar.showMessage("Análisis semántico finalizado.", 5000)
+            return not errores
+        except (OSError, ValueError, json.JSONDecodeError, TypeError) as e:
+            consola.setPlainText(f"Error en análisis semántico: {e}")
             self.consola_inferior.setCurrentIndex(2)
+            return False
 
     def ejecutar_codigo_intermedio(self):
         if self.obtener_codigo() is None: return
@@ -1676,18 +1161,36 @@ class MainWindow(QMainWindow):
         self.tabs_analisis.setCurrentIndex(4)
 
     def ejecutar_programa(self):
-        if self.obtener_codigo() is None: return
-        
-        self.status_bar.showMessage("Compilando todo el proyecto...", 3000)
+        """F5: no anuncia una ejecución exitosa si falla sintaxis o semántica.
+
+        La generación intermedia y la ejecución siguen siendo demostrativas;
+        habrá que conectarlas a un backend real en fases posteriores.
+        """
+        if self.obtener_codigo() is None:
+            return
+        self.status_bar.showMessage("Comprobando el proyecto...", 3000)
         self.ejecutar_lexico()
-        self.ejecutar_sintactico()
-        self.ejecutar_semantico()
+        if not self.ejecutar_sintactico():
+            self.restaurar_panel_inferior()
+            self.consola_inferior.widget(3).setPlainText(
+                "Proceso detenido: el análisis sintáctico no terminó correctamente."
+            )
+            self.consola_inferior.setCurrentIndex(3)
+            return
+        if not self.ejecutar_semantico():
+            self.restaurar_panel_inferior()
+            self.consola_inferior.widget(3).setPlainText(
+                "Proceso detenido: hay errores semánticos. Consulte 'Errores Semánticos'."
+            )
+            self.consola_inferior.setCurrentIndex(2)
+            return
         self.ejecutar_codigo_intermedio()
-        
-        self.restaurar_panel_inferior() 
-        self.status_bar.showMessage("Ejecutando Programa...", 3000)
-        simulacion = ">> EJECUCIÓN INICIADA...\n\nHola Mundo!\n\n>> Proceso terminado con código de salida 0."
-        self.consola_inferior.widget(3).setPlainText(simulacion)
+        self.restaurar_panel_inferior()
+        self.consola_inferior.widget(3).setPlainText(
+            "Análisis léxico, sintáctico y semántico solicitado.\n"
+            "El código intermedio mostrado es una simulación; "
+            "la ejecución real aún no está implementada."
+        )
         self.consola_inferior.setCurrentIndex(3)
 
     def crear_menus_y_herramientas(self):

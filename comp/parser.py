@@ -513,15 +513,20 @@ class Parser:
             self.avanzar()
             nodo["hijos"].append({"tipo": "id", "valor": tok.lexema, "fila": tok.fila})
             return nodo
-        elif tok.tipo == "RESERVADA" and tok.lexema in ["true", "false", "bool"]: 
+        elif tok.tipo == "RESERVADA" and tok.lexema in ["true", "false"]: 
             self.avanzar()
-            nodo["hijos"].append({"tipo": "booleano", "valor": tok.lexema})
+            nodo["hijos"].append({"tipo": "booleano", "valor": tok.lexema, "fila": tok.fila, "columna": tok.columna})
             return nodo
-        elif tok.tipo == "OP_LOGICO":
+        elif tok.tipo == "OP_LOGICO" and tok.lexema == "!":
+            # Negación unaria: el operador debe ser el padre del operando en el AST.
             self.avanzar()
-            nodo["hijos"].append({"tipo": "op_logico", "valor": tok.lexema})
             comp = self.componente()
-            if comp: nodo["hijos"].append(comp)
+            if comp:
+                nodo["hijos"].append({
+                    "tipo": "op_logico", "valor": "!",
+                    "fila": tok.fila, "columna": tok.columna,
+                    "hijos": [comp]
+                })
             return nodo
             
         if tok.tipo in ["CADENA", "CARACTER"]:

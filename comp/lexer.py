@@ -7,7 +7,7 @@ import os
 # Palabras reservadas requeridas
 RESERVADAS = {
     "if", "else", "end", "do", "while", "switch", "case", 
-    "int", "float", "main", "cin", "cout", "true", "false", "until","then"
+    "int", "float", "bool", "main", "cin", "cout", "true", "false", "until","then"
 }
 
 # Definición de tokens mediante expresiones regulares

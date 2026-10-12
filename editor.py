@@ -61,7 +61,7 @@ class LexerHighlighter(QSyntaxHighlighter):
         # 2. Palabras Reservadas (Color 4) - Van después para SOBREESCRIBIR a los identificadores
         reservadas = [
             "if", "else", "end", "do", "while", "switch", "case", 
-            "int", "float", "main", "cin", "cout", "for", "true", "false", "until","then"
+            "int", "float", "main", "cin", "cout", "for", "true", "false", "until","then","bool"
         ]
         for palabra in reservadas:
             patron = QRegularExpression(rf"\b{palabra}\b")
