@@ -14,7 +14,7 @@ from pathlib import Path
 
 
 TIPOS_NUMERICOS = {"int", "float"}
-OPERADORES_ARITMETICOS = {"+", "-", "*", "/", "^"}
+OPERADORES_ARITMETICOS = {"+", "-", "*", "/", "%", "^"}
 OPERADORES_RELACIONALES = {"<", "<=", ">", ">=", "==", "!=", "<>"}
 OPERADORES_LOGICOS = {"&&", "||", "!", "and", "or", "not", "y", "o", "no"}
 
@@ -211,9 +211,14 @@ class AnalizadorSemantico:
         if tipo == "declaracion_variable":
             return
 
-        # Propagar tipo/valor por producciones intermedias de un único hijo.
-        # Se realiza antes de verificar el contexto de if/while/do-while.
-        if len(hijos) == 1 and tipo not in {"seleccion", "iteracion", "repeticion"}:
+        # Solo los nodos transparentes heredan el resultado de su único hijo.
+        # NO hacerlo en operadores: si !2 es inválido, no debe heredar int
+        # ni producir un segundo error de asignación.
+        nodos_transparentes = {
+            "sent_expresion", "expresion", "comparacion",
+            "expresion_simple", "termino", "factor", "componente",
+        }
+        if len(hijos) == 1 and tipo in nodos_transparentes:
             hijo = hijos[0]
             if hijo.get("type") is not None:
                 nodo["type"] = hijo["type"]
@@ -258,7 +263,11 @@ class AnalizadorSemantico:
         nodo["type"] = tipo_destino
         if "eval" in derecho:
             valor = derecho["eval"]
-            nodo["eval"] = float(valor) if tipo_destino == "float" else valor
+            convertido = float(valor) if tipo_destino == "float" else valor
+            nodo["eval"] = convertido
+            # Anotar SOLO el ID destino de ESTA asignación, no la declaración
+            # original ni los usos posteriores (que podrían ser dinámicos).
+            izquierdo["eval"] = convertido
 
     def _verificar_aritmetica(self, nodo, hijos, operador):
         if len(hijos) not in {1, 2}:
@@ -286,16 +295,21 @@ class AnalizadorSemantico:
         if t_izq not in TIPOS_NUMERICOS or t_der not in TIPOS_NUMERICOS:
             self._error(nodo, f"Operador '{operador}' incompatible con '{t_izq}' y '{t_der}'.")
             return
+        # En esta gramática, % se restringe a enteros (no a float ni bool).
+        if operador == "%" and (t_izq != "int" or t_der != "int"):
+            self._error(nodo, "Operador '%' requiere operandos 'int'.")
+            return
         resultado = "float" if "float" in {t_izq, t_der} else "int"
         nodo["type"] = resultado
         self._anotar_conversion(izquierdo, t_izq, resultado)
         self._anotar_conversion(derecho, t_der, resultado)
+        # Incluso si el operando izquierdo es dinámico, x/0 y x%0 son inválidos.
+        if operador in {"/", "%"} and derecho.get("eval") == 0:
+            self._error(nodo, "División por cero detectada." if operador == "/" else "Módulo por cero detectado.")
+            return
         if "eval" not in izquierdo or "eval" not in derecho:
             return
         a, b = izquierdo["eval"], derecho["eval"]
-        if operador == "/" and b == 0:
-            self._error(nodo, "División por cero detectada.")
-            return
         try:
             if operador == "+":
                 calculado = a + b
@@ -304,8 +318,17 @@ class AnalizadorSemantico:
             elif operador == "*":
                 calculado = a * b
             elif operador == "/":
-                # Respeta el comportamiento original de división entre int.
-                calculado = a / b if resultado == "float" else a // b
+                # Para enteros, división con truncamiento hacia cero.
+                if resultado == "float":
+                    calculado = a / b
+                else:
+                    cociente = abs(a) // abs(b)
+                    calculado = -cociente if (a < 0) != (b < 0) else cociente
+            elif operador == "%":
+                # Resto consistente con el cociente truncado hacia cero.
+                cociente = abs(a) // abs(b)
+                cociente = -cociente if (a < 0) != (b < 0) else cociente
+                calculado = a - cociente * b
             else:
                 calculado = a ** b
             if isinstance(calculado, complex):

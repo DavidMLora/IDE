@@ -4,6 +4,7 @@ import sys
 import subprocess
 import shutil
 import json
+from pathlib import Path
 from PySide6.QtWidgets import (QMainWindow, QSplitter, QTabWidget, QTextEdit, 
                              QStatusBar, QWidget, QHBoxLayout, QVBoxLayout, 
                              QPushButton, QTabBar, QStackedWidget, QToolButton,
@@ -764,8 +765,12 @@ class MainWindow(QMainWindow):
         ed = self.editor_actual()
         if ed:
             if hasattr(ed, 'file_path') and ed.file_path:
-                with open(ed.file_path, 'w', encoding='utf-8') as f:
-                    f.write(ed.toPlainText())
+                # Evitar modificar mtime si el archivo no cambió: F7/F8 comparan
+                # fechas para no procesar tokens o árboles de una versión anterior.
+                contenido = ed.toPlainText()
+                if not os.path.isfile(ed.file_path) or Path(ed.file_path).read_text(encoding='utf-8') != contenido:
+                    with open(ed.file_path, 'w', encoding='utf-8') as f:
+                        f.write(contenido)
                 name = os.path.basename(ed.file_path)
                 cur = self.file_tabs_bar.currentIndex()
                 if cur != -1:
@@ -888,10 +893,18 @@ class MainWindow(QMainWindow):
         ruta_tokens = os.path.join(out_dir, f"{nombre_base}_tokens.txt")
         ruta_errores = os.path.join(out_dir, f"{nombre_base}_errores.txt")
 
-        if os.path.exists(ruta_tokens):
-            os.remove(ruta_tokens)
-        if os.path.exists(ruta_errores):
-            os.remove(ruta_errores)
+        # Una nueva ejecución léxica invalida todos los artefactos de fases posteriores.
+        for ruta_antigua in (
+            ruta_tokens, ruta_errores,
+            os.path.join(out_dir, f"{nombre_base}_ast.json"),
+            os.path.join(out_dir, f"{nombre_base}_cst.json"),
+            os.path.join(out_dir, f"{nombre_base}_ast_anotado.json"),
+            os.path.join(out_dir, f"{nombre_base}_arbol_visual.txt"),
+            os.path.join(out_dir, f"{nombre_base}_errores_sintacticos.txt"),
+            os.path.join(out_dir, f"{nombre_base}_errores_semanticos.txt"),
+        ):
+            if os.path.isfile(ruta_antigua):
+                os.remove(ruta_antigua)
 
         try:
             proceso = subprocess.run(
@@ -947,9 +960,15 @@ class MainWindow(QMainWindow):
             if self.ruta_proyecto:
                 self.cargar_proyecto_en_arbol(self.ruta_proyecto)
 
+            if proceso.returncode != 0:
+                self.consola_inferior.setCurrentIndex(0)
+                return False
+            return True
+
         except Exception as e:
             self.consola_inferior.widget(0).setPlainText(f"Error crítico al intentar ejecutar el compilador:\n{str(e)}")
             self.consola_inferior.setCurrentIndex(0)
+            return False
 
     def _poblar_arbol_sintactico(self, nodo_datos, parent_item):
         if not isinstance(nodo_datos, dict):
@@ -1049,12 +1068,33 @@ class MainWindow(QMainWindow):
             self.consola_inferior.setCurrentIndex(1)
             return False
 
+        # Un tokenizado viejo (o con errores) nunca debe convertirse en AST.
+        ruta_lexerr = os.path.join(out_dir, f"{nombre_base}_errores.txt")
+        if os.path.getmtime(ruta_tokens) < os.path.getmtime(ed.file_path):
+            self.consola_inferior.widget(1).setPlainText(
+                "El código fue modificado después de F6. Ejecute F6 nuevamente."
+            )
+            self.consola_inferior.setCurrentIndex(1)
+            return False
+        if os.path.isfile(ruta_lexerr):
+            with open(ruta_lexerr, "r", encoding="utf-8") as f:
+                if "ERROR LÉXICO:" in f.read():
+                    self.consola_inferior.widget(1).setPlainText(
+                        "No se puede realizar F7: hay errores léxicos. Revise F6."
+                    )
+                    self.consola_inferior.setCurrentIndex(1)
+                    return False
+
         ruta_parser = os.path.join(os.path.dirname(os.path.abspath(__file__)), "comp", "parser.py")
         # Impedir que un AST viejo se muestre como resultado de una ejecución fallida.
         if os.path.isfile(ruta_ast):
             os.remove(ruta_ast)
         if os.path.isfile(ruta_errores):
             os.remove(ruta_errores)
+        for sufijo in ("_ast_anotado.json", "_arbol_visual.txt", "_errores_semanticos.txt"):
+            ruta_antigua = os.path.join(out_dir, f"{nombre_base}{sufijo}")
+            if os.path.isfile(ruta_antigua):
+                os.remove(ruta_antigua)
         try:
             proceso = subprocess.run(
                 [sys.executable, ruta_parser, ruta_tokens], capture_output=True,
@@ -1115,6 +1155,19 @@ class MainWindow(QMainWindow):
             consola.setPlainText("No se encontró el AST. Presione F7 primero.")
             self.consola_inferior.setCurrentIndex(2)
             return False
+        ruta_tokens = os.path.join(out_dir, f"{nombre_base}_tokens.txt")
+        if (os.path.getmtime(ruta_ast) < os.path.getmtime(ed.file_path) or
+                (os.path.isfile(ruta_tokens) and os.path.getmtime(ruta_ast) < os.path.getmtime(ruta_tokens))):
+            consola.setPlainText("El AST está desactualizado. Ejecute F6 y F7 nuevamente.")
+            self.consola_inferior.setCurrentIndex(2)
+            return False
+        ruta_errores_sintacticos = os.path.join(out_dir, f"{nombre_base}_errores_sintacticos.txt")
+        if os.path.isfile(ruta_errores_sintacticos):
+            with open(ruta_errores_sintacticos, "r", encoding="utf-8") as f:
+                if "Error Sintactico:" in f.read():
+                    consola.setPlainText("No se puede ejecutar F8: hay errores sintácticos. Revise F7.")
+                    self.consola_inferior.setCurrentIndex(2)
+                    return False
         try:
             from comp.semantic import AnalizadorSemantico
             with open(ruta_ast, "r", encoding="utf-8") as f:
@@ -1169,7 +1222,13 @@ class MainWindow(QMainWindow):
         if self.obtener_codigo() is None:
             return
         self.status_bar.showMessage("Comprobando el proyecto...", 3000)
-        self.ejecutar_lexico()
+        if not self.ejecutar_lexico():
+            self.restaurar_panel_inferior()
+            self.consola_inferior.widget(3).setPlainText(
+                "Proceso detenido: hay errores léxicos. Consulte 'Errores Léxicos'."
+            )
+            self.consola_inferior.setCurrentIndex(0)
+            return
         if not self.ejecutar_sintactico():
             self.restaurar_panel_inferior()
             self.consola_inferior.widget(3).setPlainText(
