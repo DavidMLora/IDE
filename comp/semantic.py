@@ -34,6 +34,7 @@ class TablaSimbolos:
             "tipo": tipo_dato,
             "memloc": self.location,
             "lineas": [linea] if linea is not None else [],
+            "valor": None,  # Valor constante conocido; None = desconocido.
         }
         self.location += 1
         return True
@@ -42,7 +43,8 @@ class TablaSimbolos:
         info = self.buscar(nombre)
         if info is None:
             return False
-        if linea is not None and linea not in info["lineas"]:
+        # Cada token ID cuenta: `y = y + 1` registra dos veces la misma línea.
+        if linea is not None:
             info["lineas"].append(linea)
         return True
 
@@ -50,11 +52,12 @@ class TablaSimbolos:
         return self.tabla.get(nombre)
 
     def imprimir_tabla(self):
-        print(f"{'Nombre':<15} | {'Tipo':<10} | {'Loc':<5} | Líneas")
+        print(f"{'Nombre':<15} | {'Tipo':<10} | {'Loc':<5} | Líneas | Valor conocido")
         print("-" * 55)
         for nombre, info in self.tabla.items():
             lineas = ", ".join(map(str, info["lineas"]))
-            print(f"{nombre:<15} | {str(info['tipo']):<10} | {info['memloc']:<5} | {lineas}")
+            valor = info.get("valor")
+            print(f"{nombre:<15} | {str(info['tipo']):<10} | {info['memloc']:<5} | {lineas} | {valor!r}")
 
 
 class AnalizadorSemantico:
@@ -153,6 +156,8 @@ class AnalizadorSemantico:
                 if not nombre:
                     continue
                 if not self.symtab.insertar(nombre, linea, tipo_dato):
+                    # También contabilizar la segunda aparición declarada.
+                    self.symtab.registrar_uso(nombre, linea)
                     self._error(id_nodo, f"Variable '{nombre}' ya fue declarada.")
             # Los IDs declarados no deben contabilizarse como usos adicionales.
             return
@@ -177,20 +182,53 @@ class AnalizadorSemantico:
         if origen != destino:
             nodo["conversion"] = {"de": origen, "a": destino}
 
+    def _estado(self):
+        """Copia de valores conocidos, útil para bifurcaciones y ciclos."""
+        return {nombre: info["valor"] for nombre, info in self.symtab.tabla.items()}
+
+    def _restaurar_estado(self, estado):
+        for nombre, info in self.symtab.tabla.items():
+            info["valor"] = estado.get(nombre)
+
+    def _modificadas(self, nodo):
+        """Variables que podrían cambiar en un bloque, aunque no se ejecute."""
+        if not isinstance(nodo, dict):
+            return set()
+        tipo = nodo.get("tipo")
+        hijos = self._hijos(nodo)
+        modificadas = set()
+        if tipo == "operador" and nodo.get("valor") in {"=", ":="} and hijos:
+            if hijos[0].get("tipo") == "id":
+                modificadas.add(hijos[0].get("valor"))
+        elif tipo in {"incremento", "decremento"} and hijos:
+            if hijos[0].get("tipo") == "id":
+                modificadas.add(hijos[0].get("valor"))
+        elif tipo == "sent_in":
+            modificadas.update(h.get("valor") for h in hijos if h.get("tipo") == "id")
+        for hijo in hijos:
+            modificadas.update(self._modificadas(hijo))
+        return modificadas - {None}
+
     def _type_check(self, nodo):
-        """Un único recorrido postorden: cada nodo se procesa una sola vez."""
+        """Recorrido en orden de ejecución para propagación CONSTANTE estática.
+
+        No interpreta ciclos: pierde conservadoramente valores cuando no se
+        puede garantizar su estado final. Esto es análisis, no ejecución real.
+        """
         if not isinstance(nodo, dict):
             return
-        hijos = self._hijos(nodo)
-        for hijo in hijos:
-            self._type_check(hijo)
-
         tipo = nodo.get("tipo")
         valor = nodo.get("valor")
+        hijos = self._hijos(nodo)
+
+        if tipo == "declaracion_variable":
+            return  # La construcción de la tabla ya anotó los identificadores.
         if tipo == "id":
             info = self.symtab.buscar(valor)
             if info is not None:
                 nodo["type"] = info["tipo"]
+                if info["valor"] is not None:
+                    nodo["eval"] = info["valor"]
             return
         if tipo == "numero":
             try:
@@ -208,16 +246,133 @@ class AnalizadorSemantico:
             nodo["type"] = "bool"
             nodo["eval"] = str(valor).lower() == "true"
             return
-        if tipo == "declaracion_variable":
+
+        if tipo in {"incremento", "decremento"}:
+            if not hijos or hijos[0].get("tipo") != "id":
+                self._error(nodo, "Se esperaba identificador en incremento/decremento.")
+                return
+            destino = hijos[0]
+            info = self.symtab.buscar(destino.get("valor"))
+            if info is None:
+                return  # _build_symtab ya reportó el identificador faltante.
+            destino["type"] = info["tipo"]
+            if info["tipo"] not in TIPOS_NUMERICOS:
+                self._error(nodo, f"El operador '{valor}' requiere una variable numérica.")
+                return
+            nodo["type"] = info["tipo"]
+            if info["valor"] is not None:
+                nuevo = info["valor"] + (1 if tipo == "incremento" else -1)
+                info["valor"] = nuevo
+                destino["eval"] = nuevo
+                nodo["eval"] = nuevo
+            else:
+                info["valor"] = None
             return
 
-        # Solo los nodos transparentes heredan el resultado de su único hijo.
-        # NO hacerlo en operadores: si !2 es inválido, no debe heredar int
-        # ni producir un segundo error de asignación.
-        nodos_transparentes = {
-            "sent_expresion", "expresion", "comparacion",
-            "expresion_simple", "termino", "factor", "componente",
-        }
+        if tipo == "sent_in":
+            # cin permite la entrada de cualquier valor del tipo declarado.
+            # Lo que se introducirá en tiempo de ejecución es desconocido.
+            for hijo in hijos:
+                if hijo.get("tipo") == "id":
+                    info = self.symtab.buscar(hijo.get("valor"))
+                    if info is not None:
+                        hijo["type"] = info["tipo"]
+                        info["valor"] = None
+                else:
+                    self._type_check(hijo)
+            return
+
+        if tipo == "seleccion":
+            condicion = next((h for h in hijos if h.get("tipo") != "else"), None)
+            if condicion is None:
+                return
+            self._type_check(condicion)
+            if condicion.get("type") not in {None, "bool"}:
+                self._error(condicion, "La condición debe ser de tipo 'bool'.")
+            original = self._estado()
+            ramas = [h for h in hijos if h.get("tipo") == "lista_sentencias"]
+            rama_else = next((h for h in hijos if h.get("tipo") == "else"), None)
+            self._restaurar_estado(original)
+            for rama in ramas:
+                self._type_check(rama)
+            estado_then = self._estado()
+            self._restaurar_estado(original)
+            if rama_else is not None:
+                self._type_check(rama_else)
+                estado_else = self._estado()
+            else:
+                estado_else = original
+            cond_val = condicion.get("eval")
+            if isinstance(cond_val, bool):
+                final = estado_then if cond_val else estado_else
+            else:
+                # Solo se conserva un valor cuando ambas ramas coinciden.
+                final = {n: estado_then.get(n) if estado_then.get(n) == estado_else.get(n)
+                         else None for n in original}
+            self._restaurar_estado(final)
+            return
+
+        if tipo == "iteracion":
+            if not hijos:
+                return
+            condicion = hijos[0]
+            self._type_check(condicion)
+            if condicion.get("type") not in {None, "bool"}:
+                self._error(condicion, "La condición debe ser de tipo 'bool'.")
+            original = self._estado()
+            # No evaluar una sola iteración usando constantes que puede haber
+            # cambiado una iteración anterior: evita resultados ficticios.
+            modificadas = set().union(*(self._modificadas(h) for h in hijos[1:]))
+            cuerpo = dict(original)
+            for nombre in modificadas:
+                cuerpo[nombre] = None
+            self._restaurar_estado(cuerpo)
+            for hijo in hijos[1:]:
+                self._type_check(hijo)
+            salida = dict(original)
+            if condicion.get("eval") is not False:
+                for nombre in modificadas:
+                    salida[nombre] = None
+            self._restaurar_estado(salida)
+            return
+
+        if tipo == "repeticion":
+            # do-until: el cuerpo se procesa al menos una vez; la condición
+            # es comprobada después. No se simulan vueltas adicionales.
+            original = self._estado()
+            for hijo in hijos:
+                self._type_check(hijo)
+            if hijos:
+                condicion = hijos[-1]
+                if condicion.get("type") not in {None, "bool"}:
+                    self._error(condicion, "La condición debe ser de tipo 'bool'.")
+                # Si se sabe que termina tras la primera vuelta, conservarla.
+                if condicion.get("eval") is not True:
+                    modificadas = self._modificadas(nodo)
+                    estado = self._estado()
+                    for nombre in modificadas:
+                        estado[nombre] = None
+                    self._restaurar_estado(estado)
+            return
+
+        if tipo == "operador" and valor in {"=", ":="}:
+            if len(hijos) >= 2:
+                # Primero la expresión DERECHA: y = y + 1 debe leer el valor
+                # anterior de y antes de modificar la tabla.
+                self._type_check(hijos[1])
+                destino = hijos[0]
+                info = self.symtab.buscar(destino.get("valor")) if destino.get("tipo") == "id" else None
+                if info is not None:
+                    destino["type"] = info["tipo"]
+                self._verificar_asignacion(nodo, hijos)
+            return
+
+        for hijo in hijos:
+            self._type_check(hijo)
+
+        # Solo los nodos intermedios de expresión transmiten valor y tipo.
+        nodos_transparentes = {"sent_expresion", "expresion", "comparacion",
+                               "expresion_simple", "termino", "factor", "componente"}
         if len(hijos) == 1 and tipo in nodos_transparentes:
             hijo = hijos[0]
             if hijo.get("type") is not None:
@@ -227,19 +382,12 @@ class AnalizadorSemantico:
 
         operador = str(valor or "").lower()
         es_operador = tipo in {"suma_op", "mult_op", "pot_op", "operador", "op_relacional", "op_logico"}
-        if tipo == "asignacion" or (tipo == "operador" and operador in {"=", ":="}):
-            self._verificar_asignacion(nodo, hijos)
-        elif es_operador and operador in OPERADORES_ARITMETICOS:
+        if es_operador and operador in OPERADORES_ARITMETICOS:
             self._verificar_aritmetica(nodo, hijos, operador)
         elif es_operador and (tipo == "op_relacional" or operador in OPERADORES_RELACIONALES):
             self._verificar_relacional(nodo, hijos, operador)
         elif es_operador and (tipo == "op_logico" or operador in OPERADORES_LOGICOS):
             self._verificar_logica(nodo, hijos, operador)
-        elif tipo in {"seleccion", "iteracion", "repeticion"}:
-            # No asumir que un keyword es la condición: localizar la expresión.
-            expresiones = [h for h in hijos if h.get("type") is not None]
-            if expresiones and expresiones[0]["type"] != "bool":
-                self._error(expresiones[0], "La condición debe ser de tipo 'bool'.")
 
     def _verificar_asignacion(self, nodo, hijos):
         if len(hijos) < 2:
@@ -248,26 +396,29 @@ class AnalizadorSemantico:
         if izquierdo.get("tipo") != "id":
             self._error(izquierdo, "El destino de una asignación debe ser un identificador.")
             return
+        info = self.symtab.buscar(izquierdo.get("valor"))
         tipo_destino = izquierdo.get("type")
         tipo_origen = derecho.get("type")
-        if not tipo_destino or not tipo_origen:
-            return  # Evitar errores derivados de variables no declaradas.
+        if not info or not tipo_destino or not tipo_origen:
+            return
         if not self._conversión_permitida(tipo_destino, tipo_origen):
             self._error(
                 nodo,
                 f"Tipos incompatibles: no se puede asignar '{tipo_origen}' a "
                 f"'{izquierdo.get('valor')}' de tipo '{tipo_destino}'.",
             )
+            info["valor"] = None
             return
         self._anotar_conversion(derecho, tipo_origen, tipo_destino)
         nodo["type"] = tipo_destino
         if "eval" in derecho:
-            valor = derecho["eval"]
-            convertido = float(valor) if tipo_destino == "float" else valor
+            conocido = derecho["eval"]
+            convertido = float(conocido) if tipo_destino == "float" else conocido
             nodo["eval"] = convertido
-            # Anotar SOLO el ID destino de ESTA asignación, no la declaración
-            # original ni los usos posteriores (que podrían ser dinámicos).
             izquierdo["eval"] = convertido
+            info["valor"] = convertido
+        else:
+            info["valor"] = None
 
     def _verificar_aritmetica(self, nodo, hijos, operador):
         if len(hijos) not in {1, 2}:

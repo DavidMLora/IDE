@@ -70,6 +70,9 @@ class Parser:
             
     def parse(self):
         ast = self.programa()
+        # No aceptar silenciosamente tokens adicionales después de main { ... }.
+        if self.actual() is not None:
+            self.error("Hay tokens adicionales después del cierre del programa", self.actual())
         return ast
         
     def programa(self):
@@ -207,17 +210,16 @@ class Parser:
             nodo["hijos"].append({"tipo": "id", "valor": id_tok.lexema, "fila": id_tok.fila})
             
         tok = self.actual()
-        if tok and tok.tipo == "OP_ARITMETICO" and tok.lexema in ["+", "-"]:
-            op_str = tok.lexema
-            op1 = self.match("OP_ARITMETICO", op_str)
-            if op1: nodo["hijos"].append({"tipo": "operador", "valor": op1.lexema})
-            op2 = self.match("OP_ARITMETICO", op_str)
-            if op2: nodo["hijos"].append({"tipo": "operador", "valor": op2.lexema})
-            
-            nodo["tipo"] = "incremento" if op_str == "+" else "decremento"
-            
-            if self.actual() and self.actual().lexema == ";":
-                self.match("SIMBOLO", ";")
+        if tok and tok.tipo == "OP_ARITMETICO" and tok.lexema in ("++", "--"):
+            # El lexer reconoce ++ y -- como UN solo token; el AST conserva
+            # una única operación unaria en lugar de dos signos independientes.
+            self.avanzar()
+            nodo["tipo"] = "incremento" if tok.lexema == "++" else "decremento"
+            nodo["valor"] = tok.lexema
+            nodo["fila"] = tok.fila
+            nodo["columna"] = tok.columna
+            fin = self.match("SIMBOLO", ";")
+            if fin:
                 nodo["hijos"].append({"tipo": "simbolo", "valor": ";"})
             return nodo
             
@@ -568,14 +570,18 @@ def convertir_a_ast(nodo):
             return {
                 "tipo": "operador",
                 "valor": "=",
-                "hijos": [hijos_limpios[0], hijos_limpios[2]]
+                "hijos": [hijos_limpios[0], hijos_limpios[2]],
+                "fila": hijos_limpios[0].get("fila"),
             }
 
     # Procesar expresiones binarias (izq a der)
     # Convierte [expr, op, expr, op, expr] en un árbol con los operadores como raíz
     operadores_tipos = ["suma_op", "mult_op", "pot_op", "op_relacional", "op_logico", "operador"]
     
-    if nodo["tipo"] not in ["incremento", "decremento"] and len(hijos_limpios) >= 3 and len(hijos_limpios) % 2 == 1:
+    # Reducir únicamente listas de expresiones. Una lista de sentencias puede
+    # contener tres asignaciones y NO debe convertirse en un operador binario.
+    if (nodo["tipo"] in {"expresion", "comparacion", "expresion_simple", "termino", "factor"}
+            and len(hijos_limpios) >= 3 and len(hijos_limpios) % 2 == 1):
         is_expr = True
         for i, h in enumerate(hijos_limpios):
             if i % 2 == 1:
@@ -601,6 +607,7 @@ def convertir_a_ast(nodo):
     nuevo = {"tipo": nodo["tipo"]}
     if "valor" in nodo: nuevo["valor"] = nodo["valor"]
     if "fila" in nodo: nuevo["fila"] = nodo["fila"]
+    if "columna" in nodo: nuevo["columna"] = nodo["columna"]
     nuevo["hijos"] = hijos_limpios
     
     return nuevo
@@ -622,10 +629,14 @@ def generar_archivos_ast(ruta_tokens, tokens):
     
     ruta_errores = os.path.join(directorio, f"{nombre_base}_errores_sintacticos.txt")
     
-    if ast_semantico:
+    # Evitar AST antiguos cuando el análisis actual es inválido.
+    if os.path.exists(ruta_ast):
+        os.remove(ruta_ast)
+    if not errores_sintacticos and ast_semantico:
         with open(ruta_ast, 'w', encoding='utf-8') as f:
-            json.dump(ast_semantico, f, indent=4)
-            
+            json.dump(ast_semantico, f, ensure_ascii=False, indent=4)
+
+    # El CST puede conservarse como evidencia de diagnóstico.
     if arbol_base:
         with open(ruta_cst, 'w', encoding='utf-8') as f:
             json.dump(arbol_base, f, indent=4)
@@ -653,5 +664,8 @@ if __name__ == '__main__':
         
     ruta_ast, ruta_cst, ruta_errores = generar_archivos_ast(args.archivo_tokens, tokens)
     
+    if not os.path.isfile(ruta_ast):
+        print(f">> Errores sintácticos detectados. Consulte {ruta_errores}", file=sys.stderr)
+        sys.exit(1)
     print(f">> Archivos generados: {os.path.basename(ruta_ast)}, {os.path.basename(ruta_cst)} y {os.path.basename(ruta_errores)}")
     sys.exit(0)
